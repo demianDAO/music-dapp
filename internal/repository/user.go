@@ -12,12 +12,12 @@ type UserRepository struct {
 }
 
 // NewUserRepository 创建一个新的用户仓库
-func NewUserRepository(db *gorm.DB) *UserRepository {
-	return &UserRepository{db}
+func NewUserRepository(db *gorm.DB) UserRepository {
+	return UserRepository{db}
 }
 
 // CreateUser 创建一个新用户
-func (ur *UserRepository) CreateUser(ctx context.Context, user *models.User) error {
+func (ur *UserRepository) CreateUser(ctx context.Context, user models.User) error {
 	err := ur.db.WithContext(ctx).Create(user).Error
 	if err != nil {
 		return err
@@ -25,10 +25,9 @@ func (ur *UserRepository) CreateUser(ctx context.Context, user *models.User) err
 	return nil
 }
 
-// GetUserByID 根据用户ID获取用户信息
-func (ur *UserRepository) GetUserByID(ctx context.Context, userID string) (*models.User, error) {
+func (ur *UserRepository) GetUserByAddr(ctx context.Context, address string) (*models.User, error) {
 	var user models.User
-	err := ur.db.WithContext(ctx).Where("id = ?", userID).First(&user).Error
+	err := ur.db.WithContext(ctx).Where("address = ?", address).First(&user).Error
 	if err != nil {
 		return nil, err
 	}

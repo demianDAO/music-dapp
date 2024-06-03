@@ -17,3 +17,13 @@ services:
     ports:
       - "3306:3306"
 
+
+  redis:
+    container_name: cache
+    image: redis:latest
+    restart: always
+    environment:
+      - REDIS_PASSWORD=12345678
+      - ALLOW_EMPTY_PASSWORD=no
+    ports:
+      - "6379:6379"
