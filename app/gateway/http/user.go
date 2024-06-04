@@ -1,6 +1,7 @@
 package http
 
 import (
+	"log"
 	"net/http"
 	"web3-music-platform/app/gateway/rpc"
 	"web3-music-platform/idl/pb"
@@ -11,16 +12,14 @@ import (
 
 // UserRegisterHandler 用户注册
 func UserRegisterHandler(ctx *gin.Context) {
-	var req pb.UserRequest
+	var req pb.UserRegisterRequest
 	if err := ctx.ShouldBind(&req); err != nil {
-		//ctx.JSON(http.StatusBadRequest, cache.RespError(ctx, err, "UserRegister Bind 绑定参数失败"))
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	userResp, err := rpc.UserRegister(ctx, &req)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(http.StatusOK, userResp)
@@ -28,29 +27,25 @@ func UserRegisterHandler(ctx *gin.Context) {
 
 // UserLoginHandler 用户登录
 func UserLoginHandler(ctx *gin.Context) {
-	var req pb.UserRequest
-	if err := ctx.Bind(&req); err != nil {
-		//ctx.JSON(http.StatusBadRequest, cache.RespError(ctx, err, "UserLogin Bind 绑定参数失败"))
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	address := ctx.Query("address")
+	var req pb.UserLoginRequest
+
+	req.Address = address
+
+	res, err := rpc.UserLogin(ctx, &req)
+	log.Print("user login rpc response: ", res)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	userResp, err := rpc.UserLogin(ctx, &req)
+	token, err := utils.GenerateToken(res.User.Address)
 	if err != nil {
-		//ctx.JSON(http.StatusInternalServerError, cache.RespError(ctx, err, "UserLogin RPC 调用失败"))
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-
-		return
-	}
-	token, err := utils.GenerateToken(userResp.UserDetail.Id)
-	if err != nil {
-		//ctx.JSON(http.StatusInternalServerError, cache.RespError(ctx, err, "GenerateToken 失败"))
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"token": token,
-		"user":  userResp,
+		"user":  res.User,
 	})
 }

@@ -1,29 +1,45 @@
 version: '3.8'
 
+networks:
+  music_platform:
+    driver: bridge
+
+
 services:
-  mysql:
-    container_name: mysql
-    image: mysql:latest
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=music_db
-      - MYSQL_USER=cxp
-      - MYSQL_PASSWORD=12345678
-#    volumes:
-#      - /etc/localtime:/etc/localtime
-#      - ./config/mysql:/var/lib/mysql
-#      - ./logs/mysql/log:/var/log/mysql
-    ports:
-      - "3306:3306"
+  #  mysql:
+  #    container_name: mysql
+  #    image: mysql:latest
+  #    restart: always
+  #    environment:
+  #      - MYSQL_ROOT_PASSWORD=root
+  #      - MYSQL_DATABASE=music_db
+  #      - MYSQL_USER=cxp
+  #      - MYSQL_PASSWORD=12345678
+  #    volumes:
+  #      - /etc/localtime:/etc/localtime
+  #      - ./config/mysql:/var/lib/mysql
+  #      - ./logs/mysql/log:/var/log/mysql
+  #    ports:
+  #      - "3306:3306"
 
 
   redis:
-    container_name: cache
+    container_name: redis
     image: redis:latest
-    restart: always
     environment:
-      - REDIS_PASSWORD=12345678
-      - ALLOW_EMPTY_PASSWORD=no
+      - ALLOW_EMPTY_PASSWORD=true
     ports:
       - "6379:6379"
+    networks:
+      - music_platform
+
+  etcd:
+    image: 'bitnami/etcd:latest'
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+    ports:
+      - 2379:2379
+      - 2380:2380
+    networks:
+      - music_platform

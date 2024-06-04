@@ -14,6 +14,8 @@ var (
 	RedisNetworkAddress string
 	RedisPassword       string
 	RedisDbName         int
+
+	UserServiceAddress string
 )
 
 func Init() {
@@ -38,4 +40,8 @@ func LoadEtcd(file *ini.File) {
 func LoadRedisData(file *ini.File) {
 	RedisNetworkAddress = file.Section("cache").Key("RedisNetworkAddress").String()
 	RedisPassword = file.Section("cache").Key("RedisPassword").String()
+}
+
+func LoadServer(file *ini.File) {
+	UserServiceAddress = file.Section("server").Key("UserServiceAddress").String()
 }

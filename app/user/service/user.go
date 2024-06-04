@@ -2,80 +2,74 @@ package service
 
 import (
 	"context"
-	"errors"
+	"log"
 	"sync"
-
-	"gorm.io/gorm"
+	"web3-music-platform/app/user/repository/db/dao"
+	"web3-music-platform/app/user/repository/db/model"
+	"web3-music-platform/idl/pb"
+	"web3-music-platform/pkg/utils"
 )
 
-var UserSrvIns *UserSrv
+var UserServiceInstance *UserService
 var UserSrvOnce sync.Once
 
-type UserSrv struct {
+type UserService struct {
 }
 
-func GetUserSrv() *UserSrv {
+func (us *UserService) CreatePost(ctx context.Context, request *pb.PostCreateRequest, response *pb.PostCreateResponse) error {
+	var post = new(model.Post)
+	post.AuthorAddr = request.AuthorAddr
+	post.Content = request.Content
+	err := dao.NewPostDao(ctx).CreatePost(post)
+	if err != nil {
+		return err
+	}
+	response.Post = utils.ToRPCPost(post)
+	return nil
+}
+
+func (us *UserService) GetPostsByAuthor(ctx context.Context, request *pb.GetPostsByAuthorRequest, response *pb.GetPostsByAuthorResponse) error {
+	var postModels []*pb.PostModel
+	posts, err := dao.NewPostDao(ctx).GetPostsByAuthor(request.AuthorAddr)
+	if err != nil {
+		return err
+	}
+	for _, post := range posts {
+		postModels = append(postModels, utils.ToRPCPost(post))
+	}
+	response.Post = postModels
+	return nil
+}
+
+func NewUserService() *UserService {
 	UserSrvOnce.Do(func() {
-		UserSrvIns = &UserSrv{}
+		UserServiceInstance = &UserService{}
 	})
-	return UserSrvIns
+	return UserServiceInstance
 }
 
-func (u *UserSrv) UserLogin(ctx context.Context, req *pb.UserRequest, resp *pb.UserDetailResponse) (err error) {
-	resp.Code = e.SUCCESS
-	user, err := dao.NewUserDao(ctx).FindUserByUserName(req.UserName)
+func (us *UserService) UserLogin(ctx context.Context, request *pb.UserLoginRequest, response *pb.UserLoginResponse) error {
+	log.Print("enter user login")
+	user, err := dao.NewUserDao(ctx).FindUserByAddress(request.Address)
+	log.Print("find user:", user)
+
 	if err != nil {
-		resp.Code = e.ERROR
-		return
+		return err
 	}
 
-	if !user.CheckPassword(req.Password) {
-		resp.Code = e.InvalidParams
-		return
-	}
-
-	resp.UserDetail = BuildUser(user)
-	return
+	response.User = utils.ToRPCUser(user)
+	return nil
 }
 
-func (u *UserSrv) UserRegister(ctx context.Context, req *pb.UserRequest, resp *pb.UserDetailResponse) (err error) {
-	if req.Password != req.PasswordConfirm {
-		err = errors.New("两次密码输入不一致")
-		return
-	}
-	resp.Code = e.SUCCESS
-	_, err = dao.NewUserDao(ctx).FindUserByUserName(req.UserName)
+func (us *UserService) UserRegister(ctx context.Context, request *pb.UserRegisterRequest, response *pb.UserRegisterResponse) error {
+	var userModel = new(pb.UserModel)
+	userModel.Name = request.Name
+	userModel.Address = request.Address
+	user := utils.ToDBUser(userModel)
+	err := dao.NewUserDao(ctx).CreateUser(user)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound { // 如果不存在就继续下去
-			// ...continue
-		} else {
-			resp.Code = e.ERROR
-			return
-		}
+		return err
 	}
-	user := &model.User{
-		UserName: req.UserName,
-	}
-	// 加密密码
-	if err = user.SetPassword(req.Password); err != nil {
-		resp.Code = e.ERROR
-		return
-	}
-	if err = dao.NewUserDao(ctx).CreateUser(user); err != nil {
-		resp.Code = e.ERROR
-		return
-	}
-
-	resp.UserDetail = BuildUser(user)
-	return
-}
-
-func BuildUser(item *model.User) *pb.UserModel {
-	userModel := pb.UserModel{
-		Id:        uint32(item.ID),
-		UserName:  item.UserName,
-		CreatedAt: item.CreatedAt.Unix(),
-		UpdatedAt: item.UpdatedAt.Unix(),
-	}
-	return &userModel
+	response.User = utils.ToRPCUser(user)
+	return nil
 }

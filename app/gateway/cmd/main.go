@@ -2,20 +2,18 @@ package main
 
 import (
 	"fmt"
-	"web3-music-platform/app/gateway/router"
-	"web3-music-platform/app/gateway/rpc"
-	"web3-music-platform/app/user/repository/cache"
-	"web3-music-platform/internal/config"
-
 	"github.com/go-micro/plugins/v4/registry/etcd"
 	"go-micro.dev/v4/registry"
 	"go-micro.dev/v4/web"
+	"web3-music-platform/app/gateway/router"
+	"web3-music-platform/app/gateway/rpc"
+	"web3-music-platform/config"
 )
 
 func main() {
 	config.Init()
 	rpc.InitRPC()
-	cache.InitCache()
+	//cache.Init()
 	etcdReg := etcd.NewRegistry(
 		registry.Addrs(fmt.Sprintf("%s:%s", config.EtcdHost, config.EtcdPort)),
 	)
