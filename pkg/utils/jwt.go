@@ -37,14 +37,19 @@ func GenerateToken(address string) (string, error) {
 
 // 验证用户token
 func ParseToken(tokenString string) (*CustomClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, jwt.StandardClaims{}, func(token *jwt.Token) (i interface{}, e error) {
+	log.Print("tokenString:", tokenString)
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return TOKEN_KEY, nil
 	})
 
 	if err != nil {
-		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
-			return claims, nil
-		}
+		log.Print("token parse error:", err)
+		return nil, err
 	}
-	return nil, err
+
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, jwt.ErrSignatureInvalid
 }

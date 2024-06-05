@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"web3-music-platform/app/gateway/rpc"
 	"web3-music-platform/idl/pb"
@@ -24,6 +25,7 @@ func CreatePostHandler(ctx *gin.Context) {
 }
 
 func GetPostsByAuthorHandler(ctx *gin.Context) {
+	log.Print("GetPostsByAuthorHandler")
 	var req pb.GetPostsByAuthorRequest
 	authorAddress := ctx.Query("author_address")
 	req.AuthorAddr = authorAddress

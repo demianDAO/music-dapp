@@ -23,10 +23,10 @@ func NewRouter() *gin.Engine {
 			userGroup.GET("/login", http.UserLoginHandler)
 		}
 		postGroup := v1.Group("/post")
-		postGroup.Use(middleware.JWT())
+		//postGroup.Use(middleware.JWT())
 		{
-			postGroup.POST("", http.CreatePostHandler)
-			postGroup.GET("/:author_addr", http.GetPostsByAuthorHandler)
+			postGroup.POST("", middleware.JWT(), http.CreatePostHandler)
+			postGroup.GET("", http.GetPostsByAuthorHandler)
 		}
 		//// 需要登录保护
 		//songGroup := v1.Group("/song")

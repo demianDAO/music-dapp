@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"gorm.io/gorm"
+	"log"
 	"web3-music-platform/app/user/repository/db/model"
 )
 
@@ -20,7 +21,9 @@ func (pd *PostDao) CreatePost(post *model.Post) error {
 
 func (pd *PostDao) GetPostsByAuthor(userAddr string) ([]*model.Post, error) {
 	var posts []*model.Post
-	err := pd.Where("author_addr <> ?", userAddr).Find(&posts).Error
+	log.Print("userAddr", userAddr)
+	err := pd.Model(model.Post{}).Where("author_addr = ?", userAddr).Find(&posts).Error
+	log.Print("GetPostsByAuthor", posts)
 	if err != nil {
 		return nil, err
 	}

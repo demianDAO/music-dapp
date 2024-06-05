@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 	"time"
 	"web3-music-platform/pkg/utils"
 
@@ -12,6 +13,7 @@ import (
 func JWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
+		token = strings.Split(token, " ")[1]
 		if token == "" {
 			c.JSON(http.StatusNotFound, gin.H{
 				"msg": "token not found",
