@@ -4,7 +4,7 @@ import (
 	"context"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"web3-music-platform/app/song/migrations"
+	"web3-music-platform/app/user/migrations"
 	"web3-music-platform/config"
 )
 

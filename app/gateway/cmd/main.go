@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/go-micro/plugins/v4/registry/etcd"
 	"go-micro.dev/v4/registry"
 	"go-micro.dev/v4/web"
@@ -15,13 +14,13 @@ func main() {
 	rpc.InitRPC()
 	//cache.Init()
 	etcdReg := etcd.NewRegistry(
-		registry.Addrs(fmt.Sprintf("%s:%s", config.EtcdHost, config.EtcdPort)),
+		registry.Addrs(config.EtcdAddress),
 	)
 
 	// 创建微服务实例，使用gin暴露http接口并注册到etcd
 	server := web.NewService(
-		web.Name("httpService"),
-		web.Address("127.0.0.1:4000"),
+		web.Name(config.GatewayName),
+		web.Address(config.GatewayAddress),
 		// 将服务调用实例使用gin处理
 		web.Handler(router.NewRouter()),
 		web.Registry(etcdReg),

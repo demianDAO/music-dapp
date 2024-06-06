@@ -7,16 +7,18 @@ import (
 
 var (
 	UserService pb.UserService
+	SongService pb.SongService
 )
 
 func InitRPC() {
 	// 用户
 	userMicroService := micro.NewService(
 		micro.Name("userService.client"),
-		//micro.WrapClient(wrappers.NewUserWrapper),
 	)
-	// 用户服务调用实例
-	userService := pb.NewUserService("rpcUserService", userMicroService.Client())
+	songMicroService := micro.NewService(
+		micro.Name("songService.client"),
+	)
 
-	UserService = userService
+	UserService = pb.NewUserService("rpcUserService", userMicroService.Client())
+	SongService = pb.NewSongService("rpcSongService", songMicroService.Client())
 }

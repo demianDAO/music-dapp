@@ -8,14 +8,23 @@ import (
 var (
 	DSN string
 
-	EtcdHost string
-	EtcdPort string
+	EtcdAddress string
 
 	RedisNetworkAddress string
 	RedisPassword       string
 	RedisDbName         int
 
-	UserServiceAddress string
+	PrivateKey string
+
+	//	server
+	GatewayName    string
+	GatewayAddress string
+
+	UserName    string
+	UserAddress string
+
+	SongName    string
+	SongAddress string
 )
 
 func Init() {
@@ -26,6 +35,8 @@ func Init() {
 	LoadMysqlData(file)
 	LoadEtcd(file)
 	LoadRedisData(file)
+	LoadIrys(file)
+	LoadService(file)
 }
 
 func LoadMysqlData(file *ini.File) {
@@ -33,8 +44,7 @@ func LoadMysqlData(file *ini.File) {
 }
 
 func LoadEtcd(file *ini.File) {
-	EtcdHost = file.Section("etcd").Key("EtcdHost").String()
-	EtcdPort = file.Section("etcd").Key("EtcdPort").String()
+	EtcdAddress = file.Section("etcd").Key("EtcdAddress").String()
 }
 
 func LoadRedisData(file *ini.File) {
@@ -42,6 +52,18 @@ func LoadRedisData(file *ini.File) {
 	RedisPassword = file.Section("cache").Key("RedisPassword").String()
 }
 
-func LoadServer(file *ini.File) {
-	UserServiceAddress = file.Section("server").Key("UserServiceAddress").String()
+func LoadIrys(file *ini.File) {
+	PrivateKey = file.Section("irys").Key("PrivateKey").String()
+}
+
+func LoadService(file *ini.File) {
+	GatewayName = file.Section("gateway_service").Key("Name").String()
+	GatewayAddress = file.Section("gateway_service").Key("Address").String()
+
+	UserName = file.Section("user_service").Key("Name").String()
+	UserAddress = file.Section("user_service").Key("Address").String()
+
+	SongName = file.Section("song_service").Key("Name").String()
+	SongAddress = file.Section("song_service").Key("Address").String()
+
 }

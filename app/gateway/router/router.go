@@ -28,14 +28,10 @@ func NewRouter() *gin.Engine {
 			postGroup.POST("", middleware.JWT(), http.CreatePostHandler)
 			postGroup.GET("", http.GetPostsByAuthorHandler)
 		}
-		//// 需要登录保护
-		//songGroup := v1.Group("/song")
-		////authed.Use(middleware.JWT())
-		//{
-		//	songGroup.GET("/:address", http.GetAllSongsByAuthor)
-		//	songGroup.POST("", http.CreateSong)
-		//
-		//}
+		songGroup := v1.Group("/song")
+		{
+			songGroup.POST("", http.UploadSongHandler)
+		}
 	}
 	return ginRouter
 }

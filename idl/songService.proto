@@ -1,0 +1,27 @@
+syntax="proto3";
+package services;
+option go_package ="./;pb";
+
+message SongModel{
+  uint64 id=1;
+  string title=2;
+  string artist_address=3;
+  string overview=4;
+  string nft_address=5;
+  uint64 token_id=6;
+  string irys_tx_id=7;
+}
+
+message CreateSongRequest{
+  SongModel song=1;
+  bytes content=2;
+}
+
+message CreateSongResponse{
+    SongModel song=1;
+}
+
+
+service SongService{
+  rpc UploadSong(CreateSongRequest) returns(CreateSongResponse);
+}
