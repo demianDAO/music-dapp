@@ -19,7 +19,13 @@ func (sd *SongDao) CreateSong(Song *model.Song) error {
 	return sd.Model(&model.Song{}).Create(&Song).Error
 }
 
-func (sd *SongDao) GetSongsByArtist(artistAddress string) ([]*model.Song, error) {
+func (sd SongDao) UpdateTxId(nftAddr string, tokenId uint64, txId string) error {
+	log.Printf("UpdateTxId, nft:%v, tokenId：%v, txId: %v", nftAddr, tokenId, txId)
+	return sd.Model(&model.Song{}).Where("nft_address = ? AND token_id = ?", nftAddr, tokenId).Update("tx_id", txId).Error
+
+}
+
+func (sd *SongDao) GetSongs(artistAddress string) ([]*model.Song, error) {
 	var Songs []*model.Song
 	log.Print("artist_address", artistAddress)
 	err := sd.Model(model.Song{}).Where("artist_address = ?", artistAddress).Find(&Songs).Error

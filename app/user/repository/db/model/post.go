@@ -4,6 +4,6 @@ import "gorm.io/gorm"
 
 type Post struct {
 	gorm.Model
-	AuthorAddr string `json:"author_addr"`
-	Content    string `json:"content"`
+	UserAddr string `json:"user_addr"`
+	Content  string `json:"content"`
 }

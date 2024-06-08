@@ -25,7 +25,7 @@ func NewUserService() *UserService {
 
 func (us *UserService) CreatePost(ctx context.Context, request *pb.PostCreateRequest, response *pb.PostCreateResponse) error {
 	var post = new(model.Post)
-	post.AuthorAddr = request.GetAuthorAddr()
+	post.UserAddr = request.GetUserAddr()
 	post.Content = request.GetContent()
 	err := dao.NewPostDao(ctx).CreatePost(post)
 	if err != nil {
@@ -35,9 +35,9 @@ func (us *UserService) CreatePost(ctx context.Context, request *pb.PostCreateReq
 	return nil
 }
 
-func (us *UserService) GetPostsByAuthor(ctx context.Context, request *pb.GetPostsByAuthorRequest, response *pb.GetPostsByAuthorResponse) error {
+func (us *UserService) GetPosts(ctx context.Context, request *pb.GetPostsRequest, response *pb.GetPostsResponse) error {
 	var postModels []*pb.PostModel
-	posts, err := dao.NewPostDao(ctx).GetPostsByAuthor(request.GetAuthorAddr())
+	posts, err := dao.NewPostDao(ctx).GetPosts(request.GetUserAddr())
 	if err != nil {
 		return err
 	}

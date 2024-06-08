@@ -10,12 +10,12 @@ message UserModel{
 
 message PostModel{
   uint64 id=1;
-  string author_addr=2;
+  string user_addr=2;
   string content=3;
 }
 
 message PostCreateRequest{
-  string author_addr=1;
+  string user_addr=1;
   string content=2;
 }
 
@@ -23,11 +23,11 @@ message PostCreateResponse{
   PostModel post=1;
 }
 
-message GetPostsByAuthorRequest{
-  string author_addr=1;
+message GetPostsRequest{
+  string user_addr=1;
 }
 
-message GetPostsByAuthorResponse{
+message GetPostsResponse{
   repeated PostModel post=2;
 }
 
@@ -53,5 +53,5 @@ service UserService{
   rpc UserLogin(UserLoginRequest) returns(UserLoginResponse);
   rpc UserRegister(UserRegisterRequest) returns(UserRegisterResponse);
   rpc CreatePost(PostCreateRequest) returns(PostCreateResponse);
-  rpc GetPostsByAuthor(GetPostsByAuthorRequest) returns(GetPostsByAuthorResponse);
+  rpc GetPosts(GetPostsRequest) returns(GetPostsResponse);
 }

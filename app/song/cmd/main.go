@@ -1,12 +1,12 @@
 package main
 
 import (
-	"web3-music-platform/app/song/repository/cache"
 	"web3-music-platform/app/song/repository/db/dao"
-	"web3-music-platform/app/song/repository/db/decentralised_storage"
+	"web3-music-platform/app/song/repository/irys_cli"
 	"web3-music-platform/app/song/service"
 	"web3-music-platform/config"
 	"web3-music-platform/idl/pb"
+	"web3-music-platform/pkg/rdb"
 
 	"github.com/go-micro/plugins/v4/registry/etcd"
 	"go-micro.dev/v4"
@@ -16,8 +16,8 @@ import (
 func main() {
 	config.Init()
 	dao.Init()
-	cache.Init()
-	err := decentralised_storage.NewIrysClient(config.PrivateKey)
+	rdb.Init()
+	err := irys_cli.NewIrysClient(config.PrivateKey, config.SepoliaRPC)
 	if err != nil {
 		panic(err)
 	}

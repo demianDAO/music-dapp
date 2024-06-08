@@ -39,7 +39,7 @@ type UserService interface {
 	UserLogin(ctx context.Context, in *UserLoginRequest, opts ...client.CallOption) (*UserLoginResponse, error)
 	UserRegister(ctx context.Context, in *UserRegisterRequest, opts ...client.CallOption) (*UserRegisterResponse, error)
 	CreatePost(ctx context.Context, in *PostCreateRequest, opts ...client.CallOption) (*PostCreateResponse, error)
-	GetPostsByAuthor(ctx context.Context, in *GetPostsByAuthorRequest, opts ...client.CallOption) (*GetPostsByAuthorResponse, error)
+	GetPosts(ctx context.Context, in *GetPostsRequest, opts ...client.CallOption) (*GetPostsResponse, error)
 }
 
 type userService struct {
@@ -84,9 +84,9 @@ func (c *userService) CreatePost(ctx context.Context, in *PostCreateRequest, opt
 	return out, nil
 }
 
-func (c *userService) GetPostsByAuthor(ctx context.Context, in *GetPostsByAuthorRequest, opts ...client.CallOption) (*GetPostsByAuthorResponse, error) {
-	req := c.c.NewRequest(c.name, "UserService.GetPostsByAuthor", in)
-	out := new(GetPostsByAuthorResponse)
+func (c *userService) GetPosts(ctx context.Context, in *GetPostsRequest, opts ...client.CallOption) (*GetPostsResponse, error) {
+	req := c.c.NewRequest(c.name, "UserService.GetPosts", in)
+	out := new(GetPostsResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ type UserServiceHandler interface {
 	UserLogin(context.Context, *UserLoginRequest, *UserLoginResponse) error
 	UserRegister(context.Context, *UserRegisterRequest, *UserRegisterResponse) error
 	CreatePost(context.Context, *PostCreateRequest, *PostCreateResponse) error
-	GetPostsByAuthor(context.Context, *GetPostsByAuthorRequest, *GetPostsByAuthorResponse) error
+	GetPosts(context.Context, *GetPostsRequest, *GetPostsResponse) error
 }
 
 func RegisterUserServiceHandler(s server.Server, hdlr UserServiceHandler, opts ...server.HandlerOption) error {
@@ -108,7 +108,7 @@ func RegisterUserServiceHandler(s server.Server, hdlr UserServiceHandler, opts .
 		UserLogin(ctx context.Context, in *UserLoginRequest, out *UserLoginResponse) error
 		UserRegister(ctx context.Context, in *UserRegisterRequest, out *UserRegisterResponse) error
 		CreatePost(ctx context.Context, in *PostCreateRequest, out *PostCreateResponse) error
-		GetPostsByAuthor(ctx context.Context, in *GetPostsByAuthorRequest, out *GetPostsByAuthorResponse) error
+		GetPosts(ctx context.Context, in *GetPostsRequest, out *GetPostsResponse) error
 	}
 	type UserService struct {
 		userService
@@ -133,6 +133,6 @@ func (h *userServiceHandler) CreatePost(ctx context.Context, in *PostCreateReque
 	return h.UserServiceHandler.CreatePost(ctx, in, out)
 }
 
-func (h *userServiceHandler) GetPostsByAuthor(ctx context.Context, in *GetPostsByAuthorRequest, out *GetPostsByAuthorResponse) error {
-	return h.UserServiceHandler.GetPostsByAuthor(ctx, in, out)
+func (h *userServiceHandler) GetPosts(ctx context.Context, in *GetPostsRequest, out *GetPostsResponse) error {
+	return h.UserServiceHandler.GetPosts(ctx, in, out)
 }

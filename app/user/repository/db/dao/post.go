@@ -19,10 +19,10 @@ func (pd *PostDao) CreatePost(post *model.Post) error {
 	return pd.Model(&model.Post{}).Create(&post).Error
 }
 
-func (pd *PostDao) GetPostsByAuthor(userAddr string) ([]*model.Post, error) {
+func (pd *PostDao) GetPosts(userAddr string) ([]*model.Post, error) {
 	var posts []*model.Post
 	log.Print("userAddr", userAddr)
-	err := pd.Model(model.Post{}).Where("author_addr = ?", userAddr).Find(&posts).Error
+	err := pd.Model(model.Post{}).Where("user_addr = ?", userAddr).Find(&posts).Error
 	log.Print("GetPostsByAuthor", posts)
 	if err != nil {
 		return nil, err

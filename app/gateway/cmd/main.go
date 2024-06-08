@@ -7,12 +7,13 @@ import (
 	"web3-music-platform/app/gateway/router"
 	"web3-music-platform/app/gateway/rpc"
 	"web3-music-platform/config"
+	"web3-music-platform/pkg/rdb"
 )
 
 func main() {
 	config.Init()
 	rpc.InitRPC()
-	//cache.Init()
+	rdb.Init()
 	etcdReg := etcd.NewRegistry(
 		registry.Addrs(config.EtcdAddress),
 	)

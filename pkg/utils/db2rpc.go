@@ -23,20 +23,19 @@ func ToDBUser(user *pb.UserModel) *user_service_model.User {
 
 func ToRPCPost(post *user_service_model.Post) *pb.PostModel {
 	return &pb.PostModel{
-		Id:         uint64(post.ID),
-		AuthorAddr: post.AuthorAddr,
-		Content:    post.Content,
+		Id:       uint64(post.ID),
+		UserAddr: post.UserAddr,
+		Content:  post.Content,
 	}
 }
 
 func ToDBPost(post *pb.PostModel) *user_service_model.Post {
 	return &user_service_model.Post{
-		AuthorAddr: post.AuthorAddr,
-		Content:    post.Content,
+		UserAddr: post.UserAddr,
+		Content:  post.Content,
 	}
 }
 
-// 将 SongModel 转换为 Song 的接收器函数
 func ToSong(model *pb.SongModel) *song_service_model.Song {
 	return &song_service_model.Song{
 		Title:         model.Title,
@@ -44,11 +43,10 @@ func ToSong(model *pb.SongModel) *song_service_model.Song {
 		Overview:      model.Overview,
 		NFTAddress:    model.NftAddress,
 		TokenID:       model.TokenId,
-		IrysTxId:      model.IrysTxId,
+		TxId:          model.TxId,
 	}
 }
 
-// 将 Song 转换为 SongModel 的接收器函数
 func ToSongModel(song *song_service_model.Song) *pb.SongModel {
 	return &pb.SongModel{
 		Id:            uint64(song.ID),
@@ -57,6 +55,6 @@ func ToSongModel(song *song_service_model.Song) *pb.SongModel {
 		Overview:      song.Overview,
 		NftAddress:    song.NFTAddress,
 		TokenId:       song.TokenID,
-		IrysTxId:      song.IrysTxId,
+		TxId:          song.TxId,
 	}
 }

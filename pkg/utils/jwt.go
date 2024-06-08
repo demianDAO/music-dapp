@@ -22,7 +22,7 @@ func GenerateToken(address string) (string, error) {
 	claims := CustomClaims{
 		Address: address,
 		StandardClaims: &jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+			ExpiresAt: time.Now().Add(15 * time.Minute).Unix(),
 			Issuer:    ISSUER,
 		},
 	}

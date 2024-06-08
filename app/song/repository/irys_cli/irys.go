@@ -7,6 +7,7 @@ import (
 	"github.com/goccy/go-json"
 	"io"
 	"log"
+	"time"
 )
 
 var IrysClientInstance *irys.Client
@@ -38,7 +39,7 @@ func Upload(ic *irys.Client, ctx context.Context, data []byte) (string, error) {
 	//} else {
 	//	log.Println("No deadline is set for the context")
 	//}
-
+	time.Sleep(time.Second * 3)
 	tx, err := ic.Upload(ctx, data)
 	bytes, err := json.MarshalIndent(tx, "", "  ")
 	log.Print("Uploaded audio file to Irys network with tx ID:", string(bytes))

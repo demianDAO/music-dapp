@@ -15,6 +15,7 @@ var (
 	RedisDbName         int
 
 	PrivateKey string
+	SepoliaRPC string
 
 	//	server
 	GatewayName    string
@@ -48,12 +49,14 @@ func LoadEtcd(file *ini.File) {
 }
 
 func LoadRedisData(file *ini.File) {
-	RedisNetworkAddress = file.Section("cache").Key("RedisNetworkAddress").String()
-	RedisPassword = file.Section("cache").Key("RedisPassword").String()
+	RedisNetworkAddress = file.Section("rdb").Key("RedisNetworkAddress").String()
+	RedisPassword = file.Section("rdb").Key("RedisPassword").String()
 }
 
 func LoadIrys(file *ini.File) {
 	PrivateKey = file.Section("irys").Key("PrivateKey").String()
+	SepoliaRPC = file.Section("irys").Key("SepoliaRPC").String()
+
 }
 
 func LoadService(file *ini.File) {

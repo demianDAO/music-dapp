@@ -26,11 +26,14 @@ func NewRouter() *gin.Engine {
 		//postGroup.Use(middleware.JWT())
 		{
 			postGroup.POST("", middleware.JWT(), http.CreatePostHandler)
-			postGroup.GET("", http.GetPostsByAuthorHandler)
+			postGroup.GET("", http.GetPostsHandler)
 		}
 		songGroup := v1.Group("/song")
 		{
-			songGroup.POST("", http.UploadSongHandler)
+			songGroup.POST("", middleware.JWT(), http.UploadSongHandler)
+			songGroup.GET("", http.FindSongsHandler)
+			songGroup.GET("/:tx_id", http.DownloadSongHandler)
+
 		}
 	}
 	return ginRouter

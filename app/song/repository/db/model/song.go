@@ -9,5 +9,5 @@ type Song struct {
 	Overview      string `json:"overview"`
 	NFTAddress    string `json:"nft_address"`
 	TokenID       uint64 `json:"token_id"`
-	IrysTxId      string `json:"irys_tx_id"`
+	TxId          string `json:"tx_id"`
 }

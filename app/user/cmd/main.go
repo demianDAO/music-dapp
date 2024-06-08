@@ -1,11 +1,11 @@
 package main
 
 import (
-	"web3-music-platform/app/user/repository/cache"
 	"web3-music-platform/app/user/repository/db/dao"
 	"web3-music-platform/app/user/service"
 	"web3-music-platform/config"
 	"web3-music-platform/idl/pb"
+	"web3-music-platform/pkg/rdb"
 
 	"github.com/go-micro/plugins/v4/registry/etcd"
 	"go-micro.dev/v4"
@@ -15,7 +15,7 @@ import (
 func main() {
 	config.Init()
 	dao.Init()
-	cache.Init()
+	rdb.Init()
 
 	// etcd注册件
 	etcdReg := etcd.NewRegistry(

@@ -4,8 +4,8 @@ import (
 	"context"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"web3-music-platform/app/user/migrations"
 	"web3-music-platform/config"
+	"web3-music-platform/migrations"
 )
 
 var db *gorm.DB
