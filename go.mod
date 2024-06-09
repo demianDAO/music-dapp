@@ -9,6 +9,7 @@ require (
 	github.com/go-micro/plugins/v4/registry/etcd v1.2.0
 	github.com/goccy/go-json v0.10.3
 	github.com/redis/go-redis/v9 v9.5.2
+	github.com/streadway/amqp v1.1.0
 	go-micro.dev/v4 v4.10.2
 	google.golang.org/protobuf v1.34.1
 	gopkg.in/ini.v1 v1.67.0

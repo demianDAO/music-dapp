@@ -7,6 +7,7 @@ import (
 	"sync"
 	"web3-music-platform/app/song/repository/db/dao"
 	"web3-music-platform/app/song/repository/irys_cli"
+	"web3-music-platform/app/song/repository/mq"
 	"web3-music-platform/idl/pb"
 	"web3-music-platform/pkg/utils"
 )
@@ -41,6 +42,17 @@ func (us *SongService) FindSongs(ctx context.Context, request *pb.FindSongsReque
 	return nil
 }
 
+func (us *SongService) DownloadSong(ctx context.Context, request *pb.DownloadSongRequest, response *pb.DownloadSongResponse) error {
+	txId := request.GetTxId()
+
+	bytes, err := irys_cli.Download(irys_cli.IrysClientInstance, ctx, txId)
+	if err != nil {
+		return err
+	}
+	response.SongBytes = bytes
+	return nil
+}
+
 func (us *SongService) UploadSong(ctx context.Context, request *pb.CreateSongRequest, response *pb.CreateSongResponse) error {
 	bytes, err := json.MarshalIndent(request.GetSong(), "", "  ")
 	if err != nil {
@@ -51,37 +63,48 @@ func (us *SongService) UploadSong(ctx context.Context, request *pb.CreateSongReq
 	var song = utils.ToSong(request.GetSong())
 	songDao := dao.NewSongDao(ctx)
 	err = songDao.CreateSong(song)
+
 	if err != nil {
 		return err
 	}
 
-	// 启动一个goroutine异步上传文件并更新txId
-	go func() {
-		txId, err := irys_cli.Upload(irys_cli.IrysClientInstance, ctx, request.GetContent())
-		if err != nil {
-			log.Print("UploadAudioFile error", err)
-			return
-		}
-		log.Print("UploadAudioFile success", txId)
+	uploadReq, err := json.Marshal(&mq.UploadRequest{
+		NFTAddress: song.NFTAddress,
+		TokenID:    song.TokenID,
+		Data:       request.GetContent(),
+	})
 
-		err = songDao.UpdateTxId(song.NFTAddress, song.TokenID, txId)
-		if err != nil {
-			log.Print("UpdateTxId error", err)
-			return
-		}
-		log.Print("UpdateTxId success")
-	}()
+	err = mq.RabbitMQInstance.Publish(uploadReq)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func (us *SongService) DownloadSong(ctx context.Context, request *pb.DownloadSongRequest, response *pb.DownloadSongResponse) error {
-	txId := request.GetTxId()
-
-	bytes, err := irys_cli.Download(irys_cli.IrysClientInstance, ctx, txId)
+func UploadHandler(message []byte) error {
+	var uploadReq mq.UploadRequest
+	err := json.Unmarshal(message, &uploadReq)
 	if err != nil {
 		return err
 	}
-	response.SongBytes = bytes
+
+	ctx := context.Background()
+	songDao := dao.NewSongDao(ctx)
+
+	txId, err := irys_cli.Upload(irys_cli.IrysClientInstance, ctx, uploadReq.Data)
+	if err != nil {
+		log.Print("UploadAudioFile error", err)
+		return err
+	}
+	log.Print("UploadAudioFile success", txId)
+
+	err = songDao.UpdateTxId(uploadReq.NFTAddress, uploadReq.TokenID, txId)
+	if err != nil {
+		log.Print("UpdateTxId error", err)
+		return err
+	}
+	log.Print("UpdateTxId success")
+
 	return nil
 }

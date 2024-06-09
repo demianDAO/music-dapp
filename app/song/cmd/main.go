@@ -3,6 +3,7 @@ package main
 import (
 	"web3-music-platform/app/song/repository/db/dao"
 	"web3-music-platform/app/song/repository/irys_cli"
+	"web3-music-platform/app/song/repository/mq"
 	"web3-music-platform/app/song/service"
 	"web3-music-platform/config"
 	"web3-music-platform/idl/pb"
@@ -17,7 +18,14 @@ func main() {
 	config.Init()
 	dao.Init()
 	rdb.Init()
-	err := irys_cli.NewIrysClient(config.PrivateKey, config.SepoliaRPC)
+	err := mq.NewRabbitMQ(config.RabbitMqUrl)
+	mq.RabbitMQInstance.Consume(service.UploadHandler)
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = irys_cli.NewIrysClient(config.PrivateKey, config.SepoliaRPC)
 	if err != nil {
 		panic(err)
 	}

@@ -26,6 +26,8 @@ var (
 
 	SongName    string
 	SongAddress string
+
+	RabbitMqUrl string
 )
 
 func Init() {
@@ -38,6 +40,7 @@ func Init() {
 	LoadRedisData(file)
 	LoadIrys(file)
 	LoadService(file)
+	LoadRabbitMq(file)
 }
 
 func LoadMysqlData(file *ini.File) {
@@ -69,4 +72,8 @@ func LoadService(file *ini.File) {
 	SongName = file.Section("song_service").Key("Name").String()
 	SongAddress = file.Section("song_service").Key("Address").String()
 
+}
+
+func LoadRabbitMq(file *ini.File) {
+	RabbitMqUrl = file.Section("rabbitmq").Key("RabbitMqUrl").String()
 }
