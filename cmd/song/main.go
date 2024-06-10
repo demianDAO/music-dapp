@@ -1,31 +1,29 @@
 package main
 
 import (
+	"github.com/go-micro/plugins/v4/registry/etcd"
+	"go-micro.dev/v4"
+	"go-micro.dev/v4/registry"
 	"web3-music-platform/app/song/repository/db/dao"
 	"web3-music-platform/app/song/repository/irys_cli"
-	"web3-music-platform/app/song/repository/mq"
 	"web3-music-platform/app/song/service"
 	"web3-music-platform/config"
 	"web3-music-platform/idl/pb"
 	"web3-music-platform/pkg/rdb"
-
-	"github.com/go-micro/plugins/v4/registry/etcd"
-	"go-micro.dev/v4"
-	"go-micro.dev/v4/registry"
 )
 
 func main() {
 	config.Init()
 	dao.Init()
 	rdb.Init()
-	err := mq.NewRabbitMQ(config.RabbitMqUrl)
-	mq.RabbitMQInstance.Consume(service.UploadHandler)
+	//err := mq.NewRabbitMQ(config.RabbitMqUrl)
+	//mq.RabbitMQInstance.Consume(service.UploadHandler)
 
-	if err != nil {
-		panic(err)
-	}
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	err = irys_cli.NewIrysClient(config.PrivateKey, config.SepoliaRPC)
+	err := irys_cli.NewIrysClient(config.PrivateKey, config.SepoliaRPC)
 	if err != nil {
 		panic(err)
 	}

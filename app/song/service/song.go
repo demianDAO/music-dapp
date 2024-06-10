@@ -73,8 +73,9 @@ func (us *SongService) UploadSong(ctx context.Context, request *pb.CreateSongReq
 		TokenID:    song.TokenID,
 		Data:       request.GetContent(),
 	})
+	err = UploadHandler(uploadReq)
+	//err = mq.RabbitMQInstance.Publish(uploadReq)
 
-	err = mq.RabbitMQInstance.Publish(uploadReq)
 	if err != nil {
 		return err
 	}

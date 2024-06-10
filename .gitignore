@@ -14,5 +14,6 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 config_dev.ini
+config_test.ini
 mysql_data
 .idea
