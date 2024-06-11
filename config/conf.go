@@ -54,7 +54,7 @@ func LoadEtcd(file *ini.File) {
 }
 
 func LoadRedisData(file *ini.File) {
-	RedisNetworkAddress = file.Section("rdb").Key("RedisNetworkAddress").String()
+	RedisNetworkAddress = file.Section("rdb").Key("RedisAddr").String()
 	RedisPassword = file.Section("rdb").Key("RedisPassword").String()
 }
 
