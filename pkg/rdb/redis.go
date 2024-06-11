@@ -20,6 +20,9 @@ type RedisClient struct {
 }
 
 func Init() {
+
+	log.Print("init redis", config.RedisNetworkAddress, "   ", config.RedisPassword)
+
 	networkAddress := config.RedisNetworkAddress
 	password := config.RedisPassword
 	client := redis.NewClient(&redis.Options{
