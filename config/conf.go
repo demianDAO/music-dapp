@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"gopkg.in/ini.v1"
+	"log"
+	"os"
 )
 
 var (
@@ -31,8 +33,22 @@ var (
 )
 
 func Init() {
-	//file, err := ini.Load("./config_dev.ini")
-	file, err := ini.Load("./config_test.ini")
+
+	env := os.Getenv("APP_ENV")
+	var configFilePath string
+	log.Print("env:", env)
+	switch env {
+	case "prod":
+		configFilePath = "config_prod.ini"
+	case "test":
+		configFilePath = "config_test.ini"
+	case "dev":
+		configFilePath = "config_dev.ini"
+	default:
+		log.Fatalf("Unknown environment: %s", env)
+	}
+
+	file, err := ini.Load(configFilePath)
 
 	if err != nil {
 		fmt.Println("配置文件读取错误，请检查文件路径:", err)
