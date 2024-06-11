@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/redis/go-redis/v9"
+	"log"
 	"time"
 	song_service_model "web3-music-platform/app/song/repository/db/model"
 	user_service_model "web3-music-platform/app/user/repository/db/model"
@@ -20,13 +21,14 @@ type RedisClient struct {
 
 func Init() {
 	networkAddress := config.RedisNetworkAddress
-	//password := config.RedisPassword
+	password := config.RedisPassword
 	client := redis.NewClient(&redis.Options{
-		Addr: networkAddress,
-		//Password: password,
-		DB: 0,
+		Addr:     networkAddress,
+		Password: password,
+		DB:       0,
 	})
-	_, err := client.Ping(context.Background()).Result()
+	result, err := client.Ping(context.Background()).Result()
+	log.Print("redis ping result:", result)
 	if err != nil {
 		panic(err)
 	}

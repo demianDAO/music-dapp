@@ -4,6 +4,7 @@ import (
 	"github.com/go-micro/plugins/v4/registry/etcd"
 	"go-micro.dev/v4/registry"
 	"go-micro.dev/v4/web"
+	"log"
 	"web3-music-platform/app/gateway/router"
 	"web3-music-platform/app/gateway/rpc"
 	"web3-music-platform/config"
@@ -12,8 +13,10 @@ import (
 
 func main() {
 	config.Init()
-	rpc.InitRPC()
 	rdb.Init()
+	rpc.InitRPC()
+	log.Print("registering etcd", config.EtcdAddress)
+
 	etcdReg := etcd.NewRegistry(
 		registry.Addrs(config.EtcdAddress),
 	)
