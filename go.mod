@@ -5,6 +5,7 @@ go 1.22
 require (
 	github.com/Ja7ad/irys v0.6.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/ethereum/go-ethereum v1.14.5
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-micro/plugins/v4/registry/etcd v1.2.0
 	github.com/goccy/go-json v0.10.3
@@ -28,7 +29,7 @@ require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.3 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
-	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
@@ -43,7 +44,6 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/ethereum/c-kzg-4844 v1.0.2 // indirect
-	github.com/ethereum/go-ethereum v1.14.3 // indirect
 	github.com/evanphx/json-patch/v5 v5.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect

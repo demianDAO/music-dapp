@@ -47,6 +47,10 @@ The Music Service handles all music-related functionalities, including:
 - **NFT Management:** Store and manage NFT information corresponding to each music file.
 
 ## Getting Started
+1. select your environment
+`$env:APP_ENV = "dev"`
+2. start the services
+`go run ./cmd/${service_name}/main.go`
 
 ### Prerequisites
 

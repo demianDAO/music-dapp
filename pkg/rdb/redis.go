@@ -7,8 +7,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"log"
 	"time"
-	song_service_model "web3-music-platform/app/song/repository/db/model"
-	user_service_model "web3-music-platform/app/user/repository/db/model"
+	song_service_model "web3-music-platform/internal/app/song/models"
+	user_service_model "web3-music-platform/internal/app/user/models"
 
 	"web3-music-platform/config"
 )

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"web3-music-platform/app/user/repository/db/dao"
-	"web3-music-platform/app/user/service"
 	"web3-music-platform/config"
-	"web3-music-platform/idl/pb"
+	"web3-music-platform/internal/app/user/db"
+	"web3-music-platform/internal/app/user/services"
+	"web3-music-platform/pkg/grpc/pb"
 	"web3-music-platform/pkg/rdb"
 
 	"github.com/go-micro/plugins/v4/registry/etcd"
@@ -14,7 +14,7 @@ import (
 
 func main() {
 	config.Init()
-	dao.Init()
+	db.Init()
 	rdb.Init()
 
 	// etcd注册件
@@ -30,7 +30,7 @@ func main() {
 	// 结构命令行参数，初始化
 	microService.Init()
 	// 服务注册
-	_ = pb.RegisterUserServiceHandler(microService.Server(), service.NewUserService())
+	_ = pb.RegisterUserServiceHandler(microService.Server(), services.NewUserService())
 	// 启动微服务
 	_ = microService.Run()
 }

@@ -13,8 +13,8 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-config_dev.ini
-config_prod.ini
-config_test.ini
+config/config_dev.ini
+config/config_prod.ini
+config/config_test.ini
 mysql_data
 .idea

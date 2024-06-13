@@ -30,6 +30,14 @@ var (
 	SongAddress string
 
 	RabbitMqUrl string
+
+	NftAddr    string
+	NftMgrAddr string
+
+	TestAddr1    string
+	TestAddr2    string
+	TestPrivate1 string
+	TestPrivate2 string
 )
 
 func Init() {
@@ -39,11 +47,11 @@ func Init() {
 	log.Print("env:", env)
 	switch env {
 	case "prod":
-		configFilePath = "config_prod.ini"
+		configFilePath = "config/config_prod.ini"
 	case "test":
-		configFilePath = "config_test.ini"
+		configFilePath = "config/config_test.ini"
 	case "dev":
-		configFilePath = "config_dev.ini"
+		configFilePath = "config/config_dev.ini"
 	default:
 		log.Fatalf("Unknown environment: %s", env)
 	}
@@ -59,6 +67,7 @@ func Init() {
 	LoadIrys(file)
 	LoadService(file)
 	LoadRabbitMq(file)
+	LoadSmartContract(file)
 }
 
 func LoadMysqlData(file *ini.File) {
@@ -94,4 +103,17 @@ func LoadService(file *ini.File) {
 
 func LoadRabbitMq(file *ini.File) {
 	RabbitMqUrl = file.Section("rabbitmq").Key("RabbitMqUrl").String()
+}
+
+func LoadSmartContract(file *ini.File) {
+
+	NftAddr = file.Section("smart_contract").Key("NftAddr").String()
+	NftMgrAddr = file.Section("smart_contract").Key("NftMgrAddr").String()
+
+	TestAddr1 = file.Section("smart_contract").Key("TestAddr1").String()
+	TestAddr2 = file.Section("smart_contract").Key("TestAddr2").String()
+
+	TestPrivate1 = file.Section("smart_contract").Key("TestPrivate1").String()
+	TestPrivate2 = file.Section("smart_contract").Key("TestPrivate2").String()
+
 }

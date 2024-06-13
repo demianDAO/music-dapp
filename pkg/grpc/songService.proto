@@ -1,0 +1,46 @@
+syntax="proto3";
+package services;
+option go_package ="./;pb";
+
+message SongModel{
+  uint64 id=1;
+  string title=2;
+  string artist_addr=3;
+  string user_addr=4;
+  string overview=5;
+  string nft_addr=6;
+  uint64 token_id=7;
+  string tx_id=8;
+}
+
+message CreateSongRequest{
+  SongModel song=1;
+  bytes content=2;
+  string token_uri=3;
+}
+
+message CreateSongResponse{
+}
+
+message FindSongsRequest{
+  string artist_address=1;
+}
+
+message FindSongsResponse{
+  repeated SongModel songs=1;
+}
+
+message DownloadSongRequest{
+  string txId=1;
+}
+
+message DownloadSongResponse{
+   bytes songBytes=1;
+}
+
+
+service SongService{
+  rpc UploadSong(CreateSongRequest) returns(CreateSongResponse);
+  rpc FindSongs(FindSongsRequest) returns(FindSongsResponse);
+  rpc DownloadSong(DownloadSongRequest) returns(DownloadSongResponse);
+}

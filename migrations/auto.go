@@ -2,12 +2,12 @@ package migrations
 
 import (
 	"gorm.io/gorm"
-	song_servicc "web3-music-platform/app/song/repository/db/model"
-	user_servicc "web3-music-platform/app/user/repository/db/model"
+	song_service_model "web3-music-platform/internal/app/song/models"
+	user_service_model "web3-music-platform/internal/app/user/models"
 )
 
 func AutoMigration(db *gorm.DB) error {
-	err := db.AutoMigrate(song_servicc.Song{}, user_servicc.User{}, user_servicc.Post{})
+	err := db.AutoMigrate(song_service_model.Song{}, user_service_model.User{}, user_service_model.Post{})
 	if err != nil {
 		return err
 	}
