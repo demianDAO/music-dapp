@@ -7,8 +7,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"log"
 	"time"
-	song_service_model "web3-music-platform/internal/app/song/models"
 	user_service_model "web3-music-platform/internal/app/user/models"
+	"web3-music-platform/pkg/grpc/pb"
 
 	"web3-music-platform/config"
 )
@@ -80,20 +80,7 @@ func (client *RedisClient) CheckToken(ctx context.Context, address string) (stri
 	return client.Get(ctx, key).Result()
 }
 
-func (client RedisClient) AddSong(ctx context.Context, address string, song *song_service_model.Song) error {
-	key := "song:" + address + ":songs"
-	jsonData, err := json.Marshal(song)
-	if err != nil {
-		return err
-	}
-	err = client.LPush(ctx, key, jsonData).Err()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (client RedisClient) SetSongs(ctx context.Context, address string, songs []*song_service_model.Song) error {
+func (client RedisClient) SetSongs(ctx context.Context, address string, songs []*pb.FindSongsByAddrRes_SongInfo) error {
 	if len(songs) == 0 {
 		return errors.New("song list is empty")
 	}
@@ -106,6 +93,7 @@ func (client RedisClient) SetSongs(ctx context.Context, address string, songs []
 		}
 		pipe.LPush(ctx, key, jsonData)
 	}
+	pipe.Expire(ctx, key, 15*time.Minute)
 	_, err := pipe.Exec(ctx)
 	if err != nil {
 		return err
@@ -114,16 +102,16 @@ func (client RedisClient) SetSongs(ctx context.Context, address string, songs []
 }
 
 // GetSongs 获取 Redis 中存储的歌曲列表
-func (client RedisClient) GetSongs(ctx context.Context, address string) ([]*song_service_model.Song, error) {
+func (client RedisClient) GetSongs(ctx context.Context, address string) ([]*pb.FindSongsByAddrRes_SongInfo, error) {
 	key := "song:" + address + ":songs"
 	songStrings, err := client.LRange(ctx, key, 0, -1).Result()
 	if err != nil {
 		return nil, err
 	}
 
-	songs := make([]*song_service_model.Song, 0, len(songStrings))
+	songs := make([]*pb.FindSongsByAddrRes_SongInfo, 0, len(songStrings))
 	for _, songString := range songStrings {
-		var song *song_service_model.Song
+		var song *pb.FindSongsByAddrRes_SongInfo
 		err := json.Unmarshal([]byte(songString), &song)
 		if err != nil {
 			return nil, err

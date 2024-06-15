@@ -2,12 +2,12 @@ package services
 
 import (
 	"go-micro.dev/v4"
-	pb2 "web3-music-platform/pkg/grpc/pb"
+	"web3-music-platform/pkg/grpc/pb"
 )
 
 var (
-	UserService pb2.UserService
-	SongService pb2.SongService
+	UserService pb.UserService
+	SongService pb.SongService
 )
 
 func Init() {
@@ -19,6 +19,6 @@ func Init() {
 		micro.Name("songService.client"),
 	)
 
-	UserService = pb2.NewUserService("rpcUserService", userMicroService.Client())
-	SongService = pb2.NewSongService("rpcSongService", songMicroService.Client())
+	UserService = pb.NewUserService("rpcUserService", userMicroService.Client())
+	SongService = pb.NewSongService("rpcSongService", songMicroService.Client())
 }

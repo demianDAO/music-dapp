@@ -31,8 +31,11 @@ var (
 
 	RabbitMqUrl string
 
-	NftAddr    string
-	NftMgrAddr string
+	BSC_RPC string
+
+	MPTokenAddr      string
+	SongNFTAddr      string
+	SongNFTTradeAddr string
 
 	TestAddr1    string
 	TestAddr2    string
@@ -106,9 +109,11 @@ func LoadRabbitMq(file *ini.File) {
 }
 
 func LoadSmartContract(file *ini.File) {
+	BSC_RPC = file.Section("smart_contract").Key("BSC_RPC").String()
 
-	NftAddr = file.Section("smart_contract").Key("NftAddr").String()
-	NftMgrAddr = file.Section("smart_contract").Key("NftMgrAddr").String()
+	MPTokenAddr = file.Section("smart_contract").Key("MPTokenAddr").String()
+	SongNFTAddr = file.Section("smart_contract").Key("SongNFTAddr").String()
+	SongNFTTradeAddr = file.Section("smart_contract").Key("SongNFTTradeAddr").String()
 
 	TestAddr1 = file.Section("smart_contract").Key("TestAddr1").String()
 	TestAddr2 = file.Section("smart_contract").Key("TestAddr2").String()

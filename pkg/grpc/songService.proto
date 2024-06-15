@@ -1,46 +1,52 @@
-syntax="proto3";
+syntax = "proto3";
 package services;
-option go_package ="./;pb";
+option go_package = "./;pb";
 
-message SongModel{
-  uint64 id=1;
-  string title=2;
-  string artist_addr=3;
-  string user_addr=4;
-  string overview=5;
-  string nft_addr=6;
-  uint64 token_id=7;
-  string tx_id=8;
+
+
+message CreateSongReq{
+  string title = 1;
+  string artist_addr = 2;
+  string overview = 3;
+  bytes content = 4;
+  string token_uri = 5;
+  uint64 amount = 6;
+  uint64 price = 7;
 }
 
-message CreateSongRequest{
-  SongModel song=1;
-  bytes content=2;
-  string token_uri=3;
+message CreateSongRes{
+
 }
 
-message CreateSongResponse{
+message FindSongsByAddrReq{
+  string addr = 1;
 }
 
-message FindSongsRequest{
-  string artist_address=1;
+message FindSongsByAddrRes{
+  message SongInfo{
+    uint64 id = 1;
+    string title = 2;
+    string artist_addr = 3;
+    string overview = 4;
+    uint64 token_id = 5;
+    string token_uri = 6;
+    uint64 amount = 7;
+    uint64 price = 8;
+  }
+  repeated SongInfo songInfos = 1;
 }
 
-message FindSongsResponse{
-  repeated SongModel songs=1;
+message DownloadSongReq{
+  string txId = 1;
 }
 
-message DownloadSongRequest{
-  string txId=1;
-}
-
-message DownloadSongResponse{
-   bytes songBytes=1;
+message DownloadSongRes{
+  bytes songBytes = 1;
 }
 
 
 service SongService{
-  rpc UploadSong(CreateSongRequest) returns(CreateSongResponse);
-  rpc FindSongs(FindSongsRequest) returns(FindSongsResponse);
-  rpc DownloadSong(DownloadSongRequest) returns(DownloadSongResponse);
+  rpc UploadSong(CreateSongReq) returns(CreateSongRes);
+  rpc FindSongs(FindSongsByAddrReq) returns(FindSongsByAddrRes);
+  rpc DownloadSong(DownloadSongReq) returns(DownloadSongRes);
 }

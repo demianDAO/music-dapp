@@ -2,7 +2,6 @@ package mq
 
 import (
 	"github.com/streadway/amqp"
-	"log"
 )
 
 var RabbitMQInstance *RabbitMQ
@@ -44,44 +43,4 @@ func NewRabbitMQ(amqpURL string) error {
 func (r *RabbitMQ) Close() {
 	r.channel.Close()
 	r.conn.Close()
-}
-
-func (r *RabbitMQ) Publish(message []byte) error {
-	err := r.channel.Publish(
-		"",
-		r.queue.Name,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        message,
-		})
-	if err != nil {
-		log.Printf("Failed to publish a message: %s", err)
-		return err
-	}
-	return nil
-}
-
-func (r *RabbitMQ) Consume(handler func([]byte) error) {
-	msgs, err := r.channel.Consume(
-		r.queue.Name,
-		"",
-		true,  // auto-ack
-		false, // exclusive
-		false, // no-local
-		false, // no-wait
-		nil,   // args
-	)
-	if err != nil {
-		log.Fatalf("Failed to register a consumer: %s", err)
-	}
-
-	go func() {
-		for d := range msgs {
-			if err := handler(d.Body); err != nil {
-				log.Printf("Failed to handle message: %s", err)
-			}
-		}
-	}()
 }

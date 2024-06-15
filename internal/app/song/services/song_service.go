@@ -2,15 +2,19 @@ package services
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/goccy/go-json"
-	"log"
+	log "github.com/sirupsen/logrus"
+	"math/big"
 	"sync"
+	"web3-music-platform/config"
+	"web3-music-platform/internal/app/song/models"
 	"web3-music-platform/internal/app/song/repositories"
 	"web3-music-platform/internal/irys"
 	"web3-music-platform/internal/mq"
-
+	"web3-music-platform/pkg/contract"
 	"web3-music-platform/pkg/grpc/pb"
-	"web3-music-platform/pkg/utils"
 )
 
 var SongServiceInstance *SongService
@@ -26,102 +30,123 @@ func NewSongService() *SongService {
 	return SongServiceInstance
 }
 
-func (us *SongService) FindSongs(ctx context.Context, request *pb.FindSongsRequest, response *pb.FindSongsResponse) error {
-	songDao := repositories.NewSongDao(ctx)
-	songs, err := songDao.GetSongs(request.GetArtistAddress())
+func (us *SongService) FindSongs(ctx context.Context, req *pb.FindSongsByAddrReq, res *pb.FindSongsByAddrRes) error {
+	log.WithFields(log.Fields{
+		"pkg":  "services",
+		"func": "FindSongs",
+	}).Infof("req = %v", req)
+
+	infosByContract, err := contract.SongNFTTrade.GetMusicInfos(&bind.CallOpts{Pending: true, From: common.HexToAddress(req.GetAddr())})
 	if err != nil {
 		return err
 	}
-	var responseSongs []*pb.SongModel
+	log.WithFields(log.Fields{
+		"pkg":  "services",
+		"func": "FindSongs",
+	}).Infof("infosByContract = %v", infosByContract)
 
-	for _, song := range songs {
-		responseSongs = append(responseSongs, utils.ToSongModel(song))
+	songInfos := make([]*pb.FindSongsByAddrRes_SongInfo, len(infosByContract))
+	tokenIDs := make([]uint64, len(infosByContract))
+
+	for id, info := range infosByContract {
+		songInfos[id] = &pb.FindSongsByAddrRes_SongInfo{
+			Id:       uint64(id),
+			TokenId:  info.TokenId.Uint64(),
+			TokenUri: info.TokenURI,
+			Amount:   info.Balance.Uint64(),
+			Price:    info.Price.Uint64(),
+		}
+		tokenIDs[id] = info.TokenId.Uint64()
 	}
 
-	response.Songs = responseSongs
+	repository := repositories.NewSongRepository(ctx)
 
+	infosByDB, err := repository.GetSongsByTokenIDs(tokenIDs)
+	if err != nil {
+		return err
+	}
+	log.WithFields(log.Fields{
+		"pkg":  "services",
+		"func": "FindSongs",
+	}).Infof("infosByDB = %v", infosByDB)
+
+	for id, info := range infosByDB {
+		songInfos[id].Title = info.Title
+		songInfos[id].ArtistAddr = info.ArtistAddr
+		songInfos[id].Overview = info.Overview
+	}
+	res.SongInfos = songInfos
 	return nil
 }
 
-func (us *SongService) DownloadSong(ctx context.Context, request *pb.DownloadSongRequest, response *pb.DownloadSongResponse) error {
-	txId := request.GetTxId()
-
+func (us *SongService) DownloadSong(ctx context.Context, req *pb.DownloadSongReq, res *pb.DownloadSongRes) error {
+	txId := req.GetTxId()
 	bytes, err := irys.Download(irys.IrysClientInstance, ctx, txId)
 	if err != nil {
 		return err
 	}
-	response.SongBytes = bytes
+	res.SongBytes = bytes
 	return nil
 }
 
-func (us *SongService) UploadSong(ctx context.Context, request *pb.CreateSongRequest, response *pb.CreateSongResponse) error {
-	bytes, err := json.MarshalIndent(request.GetSong(), "", "  ")
-	if err != nil {
-		return err
-	}
-	log.Print("UploadSong", string(bytes))
+func (us *SongService) UploadSong(ctx context.Context, req *pb.CreateSongReq, res *pb.CreateSongRes) error {
+	log.WithFields(log.Fields{
+		"pkg":  "services",
+		"func": "UploadSong",
+	}).Infof("req = %v", req)
 
-	var song = utils.ToSong(request.GetSong())
-	log.Print("UploadSong === UserAddr", song.UserAddr)
-	songDao := repositories.NewSongDao(ctx)
-	err = songDao.CreateSong(song)
+	songRepo := repositories.NewSongRepository(ctx)
+
+	tokenId, err := contract.SongNFT.CurrentID(&bind.CallOpts{Pending: true})
 
 	if err != nil {
 		return err
 	}
 
-	uploadReq, err := json.Marshal(&mq.UploadRequest{
-		NFTAddress: song.NFTAddr,
-		TokenID:    song.TokenID,
-		Data:       request.GetContent(),
+	log.WithFields(log.Fields{
+		"pkg":  "services",
+		"func": "UploadSong",
+	}).Infof("tokenId = %v", tokenId)
+
+	err = songRepo.CreateSong(&models.Song{
+		Title:      req.GetTitle(),
+		ArtistAddr: req.GetArtistAddr(),
+		Overview:   req.GetOverview(),
+		TokenID:    tokenId.Uint64(),
 	})
-	//err = UploadHandler(uploadReq)
-	err = mq.RabbitMQInstance.Publish(uploadReq)
+
 	if err != nil {
 		return err
 	}
 
-	//go func() {
-	//	var tx *types.Transaction
-	//	var err error
-	//	if song.UserAddr == config.TestAddr1 {
-	//		tx, err = contract.NFTContract.Mint(contract.TransactOpts1, request.GetTokenUri(), big.NewInt(1))
-	//	} else if song.UserAddr == config.TestAddr2 {
-	//		tx, err = contract.NFTContract.Mint(contract.TransactOpts2, request.GetTokenUri(), big.NewInt(1))
-	//	}
-	//	if err != nil {
-	//		log.Fatal("Mint error", err)
-	//	} else {
-	//		log.Print("Mint success", tx.Hash().Hex())
-	//	}
-	//}()
+	//mint song nft
+	go func() {
+		if req.GetArtistAddr() == config.TestAddr1 {
+			mintTx, err := contract.SongNFTTrade.CreateMusic(contract.TransactOpts1, big.NewInt(int64(req.GetAmount())), big.NewInt(int64(req.GetPrice())), req.GetTokenUri())
+			if err != nil {
+				log.WithFields(log.Fields{
+					"pkg":  "services",
+					"func": "UploadSong",
+				}).Errorf("Mint err = %v", err)
+			}
+			log.WithFields(log.Fields{
+				"pkg":  "services",
+				"func": "UploadSong",
+			}).Infof("mintTx = %v", mintTx)
+		}
+	}()
 
-	return nil
-}
+	uploadReq, err := json.Marshal(&mq.UploadReq{
+		ArtistAddr: req.GetArtistAddr(),
+		TokenID:    tokenId.Uint64(),
+		Data:       req.GetContent(),
+	})
 
-func UploadHandler(message []byte) error {
-	var uploadReq mq.UploadRequest
-	err := json.Unmarshal(message, &uploadReq)
+	err = mq.Publish(mq.RabbitMQInstance, uploadReq)
+
 	if err != nil {
 		return err
 	}
-
-	ctx := context.Background()
-	songDao := repositories.NewSongDao(ctx)
-
-	txId, err := irys.Upload(irys.IrysClientInstance, ctx, uploadReq.Data)
-	if err != nil {
-		log.Print("UploadAudioFile error", err)
-		return err
-	}
-	log.Print("UploadAudioFile success", txId)
-
-	err = songDao.UpdateTxId(uploadReq.NFTAddress, uploadReq.TokenID, txId)
-	if err != nil {
-		log.Print("UpdateTxId error", err)
-		return err
-	}
-	log.Print("UpdateTxId success")
 
 	return nil
 }

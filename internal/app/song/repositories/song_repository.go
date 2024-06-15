@@ -2,36 +2,59 @@ package repositories
 
 import (
 	"context"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"log"
 	"web3-music-platform/internal/app/song/db"
 	"web3-music-platform/internal/app/song/models"
 )
 
-type SongDao struct {
+type SongRepository struct {
 	*gorm.DB
 }
 
-func NewSongDao(ctx context.Context) *SongDao {
-	return &SongDao{db.NewDBClient(ctx)}
+func NewSongRepository(ctx context.Context) *SongRepository {
+	return &SongRepository{db.NewDBClient(ctx)}
 }
 
-func (sd *SongDao) CreateSong(Song *models.Song) error {
-	return sd.Model(&models.Song{}).Create(&Song).Error
+func (sr *SongRepository) CreateSong(song *models.Song) error {
+	return sr.Model(&models.Song{}).Create(&song).Error
 }
 
-func (sd SongDao) UpdateTxId(nftAddr string, tokenId uint64, txId string) error {
-	log.Printf("UpdateTxId, nft:%v, tokenId：%v, txId: %v", nftAddr, tokenId, txId)
-	return sd.Model(&models.Song{}).Where("nft_addr = ? AND token_id = ?", nftAddr, tokenId).Update("tx_id", txId).Error
+func (sr *SongRepository) SetTxId(artistAddr string, tokenId uint64, txId string) error {
+	log.WithFields(log.Fields{
+		"pkg":  "repositories",
+		"func": "UpdateTxId",
+	}).Infof("tokenId = %v,txId = %v", tokenId, txId)
+
+	return sr.Model(&models.Song{}).Where("token_id = ? AND artist_addr = ?", tokenId, artistAddr).Update("tx_id", txId).Error
 }
 
-func (sd *SongDao) GetSongs(artistAddress string) ([]*models.Song, error) {
-	var Songs []*models.Song
-	log.Print("artist_address", artistAddress)
-	err := sd.Model(models.Song{}).Where("artist_address = ?", artistAddress).Find(&Songs).Error
-	log.Print("GetSongsByAuthor", Songs)
+func (sr *SongRepository) GetSongsByAddr(artistAddr string) ([]*models.Song, error) {
+
+	log.WithFields(log.Fields{
+		"pkg":  "repositories",
+		"func": "UpdateTxId",
+	}).Infof("artistAddr = %v", artistAddr)
+
+	var songs []*models.Song
+
+	err := sr.Model(&models.Song{}).Where("artist_addr = ?", artistAddr).Find(&songs).Error
 	if err != nil {
 		return nil, err
 	}
-	return Songs, nil
+	return songs, nil
+}
+
+func (sr *SongRepository) GetSongsByTokenIDs(tokenIDs []uint64) ([]*models.Song, error) {
+	log.WithFields(log.Fields{
+		"pkg":  "repositories",
+		"func": "GetSongsByTokenIDs",
+	}).Infof("tokenIDs = %v", tokenIDs)
+
+	var songs []*models.Song
+	err := sr.Model(&models.Song{}).Where("token_id IN (?)", tokenIDs).Find(&songs).Error
+	if err != nil {
+		return nil, err
+	}
+	return songs, nil
 }

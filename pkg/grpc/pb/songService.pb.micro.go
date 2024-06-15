@@ -27,18 +27,18 @@ var _ context.Context
 var _ client.Option
 var _ server.Option
 
-// Api Endpoints for SongService services
+// Api Endpoints for SongService service
 
 func NewSongServiceEndpoints() []*api.Endpoint {
 	return []*api.Endpoint{}
 }
 
-// Client API for SongService services
+// Client API for SongService service
 
 type SongService interface {
-	UploadSong(ctx context.Context, in *CreateSongRequest, opts ...client.CallOption) (*CreateSongResponse, error)
-	FindSongs(ctx context.Context, in *FindSongsRequest, opts ...client.CallOption) (*FindSongsResponse, error)
-	DownloadSong(ctx context.Context, in *DownloadSongRequest, opts ...client.CallOption) (*DownloadSongResponse, error)
+	UploadSong(ctx context.Context, in *CreateSongReq, opts ...client.CallOption) (*CreateSongRes, error)
+	FindSongs(ctx context.Context, in *FindSongsByAddrReq, opts ...client.CallOption) (*FindSongsByAddrRes, error)
+	DownloadSong(ctx context.Context, in *DownloadSongReq, opts ...client.CallOption) (*DownloadSongRes, error)
 }
 
 type songService struct {
@@ -53,9 +53,9 @@ func NewSongService(name string, c client.Client) SongService {
 	}
 }
 
-func (c *songService) UploadSong(ctx context.Context, in *CreateSongRequest, opts ...client.CallOption) (*CreateSongResponse, error) {
+func (c *songService) UploadSong(ctx context.Context, in *CreateSongReq, opts ...client.CallOption) (*CreateSongRes, error) {
 	req := c.c.NewRequest(c.name, "SongService.UploadSong", in)
-	out := new(CreateSongResponse)
+	out := new(CreateSongRes)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -63,9 +63,9 @@ func (c *songService) UploadSong(ctx context.Context, in *CreateSongRequest, opt
 	return out, nil
 }
 
-func (c *songService) FindSongs(ctx context.Context, in *FindSongsRequest, opts ...client.CallOption) (*FindSongsResponse, error) {
+func (c *songService) FindSongs(ctx context.Context, in *FindSongsByAddrReq, opts ...client.CallOption) (*FindSongsByAddrRes, error) {
 	req := c.c.NewRequest(c.name, "SongService.FindSongs", in)
-	out := new(FindSongsResponse)
+	out := new(FindSongsByAddrRes)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -73,9 +73,9 @@ func (c *songService) FindSongs(ctx context.Context, in *FindSongsRequest, opts 
 	return out, nil
 }
 
-func (c *songService) DownloadSong(ctx context.Context, in *DownloadSongRequest, opts ...client.CallOption) (*DownloadSongResponse, error) {
+func (c *songService) DownloadSong(ctx context.Context, in *DownloadSongReq, opts ...client.CallOption) (*DownloadSongRes, error) {
 	req := c.c.NewRequest(c.name, "SongService.DownloadSong", in)
-	out := new(DownloadSongResponse)
+	out := new(DownloadSongRes)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -83,19 +83,19 @@ func (c *songService) DownloadSong(ctx context.Context, in *DownloadSongRequest,
 	return out, nil
 }
 
-// Server API for SongService services
+// Server API for SongService service
 
 type SongServiceHandler interface {
-	UploadSong(context.Context, *CreateSongRequest, *CreateSongResponse) error
-	FindSongs(context.Context, *FindSongsRequest, *FindSongsResponse) error
-	DownloadSong(context.Context, *DownloadSongRequest, *DownloadSongResponse) error
+	UploadSong(context.Context, *CreateSongReq, *CreateSongRes) error
+	FindSongs(context.Context, *FindSongsByAddrReq, *FindSongsByAddrRes) error
+	DownloadSong(context.Context, *DownloadSongReq, *DownloadSongRes) error
 }
 
 func RegisterSongServiceHandler(s server.Server, hdlr SongServiceHandler, opts ...server.HandlerOption) error {
 	type songService interface {
-		UploadSong(ctx context.Context, in *CreateSongRequest, out *CreateSongResponse) error
-		FindSongs(ctx context.Context, in *FindSongsRequest, out *FindSongsResponse) error
-		DownloadSong(ctx context.Context, in *DownloadSongRequest, out *DownloadSongResponse) error
+		UploadSong(ctx context.Context, in *CreateSongReq, out *CreateSongRes) error
+		FindSongs(ctx context.Context, in *FindSongsByAddrReq, out *FindSongsByAddrRes) error
+		DownloadSong(ctx context.Context, in *DownloadSongReq, out *DownloadSongRes) error
 	}
 	type SongService struct {
 		songService
@@ -108,14 +108,14 @@ type songServiceHandler struct {
 	SongServiceHandler
 }
 
-func (h *songServiceHandler) UploadSong(ctx context.Context, in *CreateSongRequest, out *CreateSongResponse) error {
+func (h *songServiceHandler) UploadSong(ctx context.Context, in *CreateSongReq, out *CreateSongRes) error {
 	return h.SongServiceHandler.UploadSong(ctx, in, out)
 }
 
-func (h *songServiceHandler) FindSongs(ctx context.Context, in *FindSongsRequest, out *FindSongsResponse) error {
+func (h *songServiceHandler) FindSongs(ctx context.Context, in *FindSongsByAddrReq, out *FindSongsByAddrRes) error {
 	return h.SongServiceHandler.FindSongs(ctx, in, out)
 }
 
-func (h *songServiceHandler) DownloadSong(ctx context.Context, in *DownloadSongRequest, out *DownloadSongResponse) error {
+func (h *songServiceHandler) DownloadSong(ctx context.Context, in *DownloadSongReq, out *DownloadSongRes) error {
 	return h.SongServiceHandler.DownloadSong(ctx, in, out)
 }

@@ -2,9 +2,8 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/goccy/go-json"
 	"github.com/redis/go-redis/v9"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"web3-music-platform/internal/app/gateway/services"
@@ -17,6 +16,11 @@ func UploadSong(ctx *gin.Context) {
 
 	var song models.Song
 
+	var logInstance = log.WithFields(log.Fields{
+		"module": "handlers",
+		"func":   "UploadSong",
+	})
+
 	fileHeader, err := ctx.FormFile("file")
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
@@ -24,39 +28,21 @@ func UploadSong(ctx *gin.Context) {
 	}
 
 	song.Title = ctx.PostForm("title")
-	song.ArtistAddr = ctx.PostForm("artist_addr")
+	song.ArtistAddr = ctx.GetString("user_addr")
 	song.Overview = ctx.PostForm("overview")
-	song.NFTAddr = ctx.PostForm("nft_addr")
-	song.TokenID, _ = strconv.ParseUint(ctx.PostForm("token_id"), 10, 64)
 	tokenUri := ctx.PostForm("token_uri")
-	userAddr, exists := ctx.Get("user_addr")
-	if !exists {
-		panic("user_addr not found in context")
+	amount, _ := strconv.ParseUint(ctx.PostForm("amount"), 10, 64)
+	price, _ := strconv.ParseUint(ctx.PostForm("price"), 10, 64)
+
+	//go func() {
+	fileBytes, err := utils.FileHeaderToBytes(fileHeader)
+	logInstance.Infof("song:%v token_uri:%v amount:%v price:%v", song, tokenUri, amount, price)
+	err = services.UploadSong(ctx, song, fileBytes, tokenUri, amount, price)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return
 	}
-	userAddrStr, ok := userAddr.(string)
-
-	if !ok {
-		panic("user_addr is not a string")
-	}
-
-	song.UserAddr = userAddrStr
-
-	marshalIndent, err := json.MarshalIndent(&song, "", "  ")
-	log.Print("UploadSong==>", string(marshalIndent))
-
-	go func() {
-		err = rdb.RedisInstance.AddSong(ctx, song.UserAddr, &song)
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Failed to cache song")
-			return
-		}
-		fileBytes, err := utils.FileHeaderToBytes(fileHeader)
-		err = services.UploadSong(ctx, song, fileBytes, tokenUri)
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
-			return
-		}
-	}()
+	//}()
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "upload success",
@@ -64,13 +50,17 @@ func UploadSong(ctx *gin.Context) {
 }
 
 func FindSongs(ctx *gin.Context) {
-	userAddr := ctx.Query("user_address")
+	var logInstance = log.WithFields(log.Fields{
+		"module": "handlers",
+		"func":   "FindSongs",
+	})
+	userAddr := ctx.Query("user_addr")
 
 	songs, err := rdb.RedisInstance.GetSongs(ctx, userAddr)
-	//todo:tx_id更新后，没有同步到redis
 	if err == redis.Nil || len(songs) == 0 {
 
 		songs, err = services.FindSongs(ctx, userAddr)
+		logInstance.Infof("songs:%v", songs)
 
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
@@ -80,11 +70,9 @@ func FindSongs(ctx *gin.Context) {
 		err = rdb.RedisInstance.SetSongs(ctx, userAddr, songs)
 
 		if err != nil {
-			log.Print("Failed to add songs to Redis==>", err)
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Failed to cache songs")
 			return
 		}
-
 	} else if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return

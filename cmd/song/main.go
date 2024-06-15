@@ -5,12 +5,13 @@ import (
 	"go-micro.dev/v4"
 	"go-micro.dev/v4/registry"
 	"web3-music-platform/internal/app/song/db"
+	"web3-music-platform/internal/app/song/handlers"
 	"web3-music-platform/internal/app/song/services"
 	"web3-music-platform/internal/irys"
 	"web3-music-platform/internal/mq"
+	"web3-music-platform/pkg/contract"
 
 	"web3-music-platform/config"
-	"web3-music-platform/pkg/contract"
 	"web3-music-platform/pkg/grpc/pb"
 	"web3-music-platform/pkg/rdb"
 )
@@ -19,13 +20,14 @@ func main() {
 	config.Init()
 	db.Init()
 	rdb.Init()
-	err := contract.NewGethClient(config.SepoliaRPC, config.NftAddr, config.NftMgrAddr)
+	err := contract.NewGethClient()
 	if err != nil {
+		//log.Print("NewGethClient error ", err.Error())
 		panic(err)
 	}
 
 	err = mq.NewRabbitMQ(config.RabbitMqUrl)
-	mq.RabbitMQInstance.Consume(services.UploadHandler)
+	mq.Consume(mq.RabbitMQInstance, handlers.UploadAudioFile)
 
 	if err != nil {
 		panic(err)
@@ -35,7 +37,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	// etcd注册件
 	etcdReg := etcd.NewRegistry(
 		registry.Addrs(config.EtcdAddress),
