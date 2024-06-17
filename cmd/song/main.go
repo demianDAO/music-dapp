@@ -5,7 +5,6 @@ import (
 	"go-micro.dev/v4"
 	"go-micro.dev/v4/registry"
 	"web3-music-platform/internal/app/song/db"
-	"web3-music-platform/internal/app/song/handlers"
 	"web3-music-platform/internal/app/song/services"
 	"web3-music-platform/internal/irys"
 	"web3-music-platform/internal/mq"
@@ -26,8 +25,7 @@ func main() {
 		panic(err)
 	}
 
-	err = mq.NewRabbitMQ(config.RabbitMqUrl)
-	mq.Consume(mq.RabbitMQInstance, handlers.UploadAudioFile)
+	err = mq.Init(config.RabbitMqUrl)
 
 	if err != nil {
 		panic(err)

@@ -5,14 +5,14 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func Publish(r *RabbitMQ, message []byte) error {
+func Publish(r *RabbitMQ, routingKey string, message []byte) error {
 	var logInstance = log.WithFields(log.Fields{
 		"module": "mq",
 		"func":   "Publish",
 	})
 	err := r.channel.Publish(
-		"",
-		r.queue.Name,
+		ExchangeName,
+		routingKey,
 		false,
 		false,
 		amqp.Publishing{

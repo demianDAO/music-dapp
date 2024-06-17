@@ -2,18 +2,16 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/goccy/go-json"
 	log "github.com/sirupsen/logrus"
-	"math/big"
 	"sync"
-	"web3-music-platform/config"
 	"web3-music-platform/internal/app/song/models"
 	"web3-music-platform/internal/app/song/repositories"
 	"web3-music-platform/internal/irys"
 	"web3-music-platform/internal/mq"
+	"web3-music-platform/internal/mq/messages"
 	"web3-music-platform/pkg/contract"
 	"web3-music-platform/pkg/grpc/pb"
 )
@@ -39,20 +37,19 @@ func (us *SongService) PurchaseSong(ctx context.Context, req *pb.PurchaseSongReq
 	logInstance.Infof("song = %v", req.GetTokenId())
 	logInstance.Infof("singer = %v", req.GetSingerAddr())
 
-	var tx *types.Transaction
-	var err error
+	purchaseSongNFTReq, err := json.Marshal(&messages.PurchaseSongNFTReq{
+		SingerAddr: req.GetSingerAddr(),
+		TokenID:    req.GetTokenId(),
+		UserAddr:   req.GetUserAddr(),
+	})
 
-	if req.GetUserAddr() == config.TestAddr1 {
-		tx, err = contract.SongNFTTrade.PurchaseSong(contract.TransactOpts1, big.NewInt(int64(req.GetTokenId())), common.HexToAddress(req.GetSingerAddr()))
-	} else if req.GetUserAddr() == config.TestAddr2 {
-		tx, err = contract.SongNFTTrade.PurchaseSong(contract.TransactOpts2, big.NewInt(int64(req.GetTokenId())), common.HexToAddress(req.GetSingerAddr()))
-	}
+	err = mq.Publish(mq.RabbitMQInstance, mq.Queues[mq.PurchaseSongQueue], purchaseSongNFTReq)
 
 	if err != nil {
-		logInstance.Errorf("err = %v", err)
+		logInstance.Errorf("PurchaseSongQueue err = %v", err)
 		return err
 	}
-	logInstance.Infof("tx = %v", tx)
+
 	return nil
 }
 
@@ -116,25 +113,24 @@ func (us *SongService) DownloadSong(ctx context.Context, req *pb.DownloadSongReq
 }
 
 func (us *SongService) UploadSong(ctx context.Context, req *pb.CreateSongReq, res *pb.CreateSongRes) error {
-	log.WithFields(log.Fields{
+	logIns := log.WithFields(log.Fields{
 		"pkg":  "services",
 		"func": "UploadSong",
-	}).Infof("req = %v", req)
+	})
+	//var sm sync.Mutex
 
 	songRepo := repositories.NewSongRepository(ctx)
 
+	//sm.Lock()
 	tokenId, err := contract.SongNFT.CurrentID(&bind.CallOpts{Pending: true})
 
-	var tx *types.Transaction
-
 	if err != nil {
+		logIns.Errorf("CurrentID err = %v", err)
 		return err
 	}
+	//sm.Unlock()
 
-	log.WithFields(log.Fields{
-		"pkg":  "services",
-		"func": "UploadSong",
-	}).Infof("tokenId = %v", tokenId)
+	logIns.Debugf("CurrentID:%v", tokenId)
 
 	err = songRepo.CreateSong(&models.Song{
 		Title:      req.GetTitle(),
@@ -144,40 +140,38 @@ func (us *SongService) UploadSong(ctx context.Context, req *pb.CreateSongReq, re
 	})
 
 	if err != nil {
+		logIns.Errorf("CreateSong err = %v", err)
 		return err
 	}
 
-	//mint song nft
 	go func() {
-		if req.GetArtistAddr() == config.TestAddr1 {
-			tx, err = contract.SongNFTTrade.CreateMusic(contract.TransactOpts1, big.NewInt(int64(req.GetAmount())), big.NewInt(int64(req.GetPrice())), req.GetTokenUri())
-		} else if req.GetArtistAddr() == config.TestAddr2 {
-			tx, err = contract.SongNFTTrade.CreateMusic(contract.TransactOpts2, big.NewInt(int64(req.GetAmount())), big.NewInt(int64(req.GetPrice())), req.GetTokenUri())
-		}
+		uploadSongReq, err := json.Marshal(&messages.UploadSongReq{
+			ArtistAddr: req.GetArtistAddr(),
+			TokenID:    tokenId.Uint64(),
+			Data:       req.GetContent(),
+		})
+
+		err = mq.Publish(mq.RabbitMQInstance, mq.Queues[mq.SongUploadQueue], uploadSongReq)
 
 		if err != nil {
-			log.WithFields(log.Fields{
-				"pkg":  "services",
-				"func": "UploadSong",
-			}).Errorf("Mint err = %v", err)
+			logIns.Errorf("SongUpload err = %v", err)
 		}
-		log.WithFields(log.Fields{
-			"pkg":  "services",
-			"func": "UploadSong",
-		}).Infof("tx = %v", tx)
 	}()
 
-	uploadReq, err := json.Marshal(&mq.UploadReq{
-		ArtistAddr: req.GetArtistAddr(),
-		TokenID:    tokenId.Uint64(),
-		Data:       req.GetContent(),
-	})
+	go func() {
+		createSongNFTReq, err := json.Marshal(&messages.CreateSongNFTReq{
+			ArtistAddr: req.GetArtistAddr(),
+			TokenURI:   req.GetTokenUri(),
+			Price:      req.GetPrice(),
+			Amount:     req.GetAmount(),
+		})
 
-	err = mq.Publish(mq.RabbitMQInstance, uploadReq)
+		err = mq.Publish(mq.RabbitMQInstance, mq.Queues[mq.CreateSongQueue], createSongNFTReq)
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			logIns.Errorf("createSongNFT err = %v", err)
+		}
+	}()
 
 	return nil
 }

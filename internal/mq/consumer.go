@@ -1,36 +1,35 @@
 package mq
 
-import log "github.com/sirupsen/logrus"
+import (
+	"github.com/sirupsen/logrus"
+)
 
-func Consume(r *RabbitMQ, handler func([]byte) error) {
-	var logInstance = log.WithFields(log.Fields{
+func Consume(r *RabbitMQ, queueName string, handler func([]byte) error) {
+	logInstance := logrus.WithFields(logrus.Fields{
 		"module": "mq",
 		"func":   "Consume",
 	})
 
 	msgs, err := r.channel.Consume(
-		r.queue.Name,
+		queueName,
 		"",
-		true,  // auto-ack
-		false, // exclusive
-		false, // no-local
-		false, // no-wait
-		nil,   // args
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
 
 	if err != nil {
 		logInstance.Fatalf("Failed to register a consumer: %s", err)
 	}
 
-	//var forever = make(chan bool)
-
 	go func() {
 		for msg := range msgs {
-			if err := handler(msg.Body); err != nil {
-				logInstance.Printf("Failed to handle message: %s", err)
+			err := handler(msg.Body)
+			if err != nil {
+				logInstance.Errorf("Failed to handle message: %s", err)
 			}
 		}
 	}()
-
-	//<-forever
 }
