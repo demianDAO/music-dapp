@@ -33,6 +33,7 @@ func NewRouter() *gin.Engine {
 			songGroup.POST("", middleware2.JWT(), handlers.UploadSong)
 			songGroup.GET("", handlers.FindSongs)
 			songGroup.GET("/:tx_id", handlers.DownloadSong)
+			songGroup.POST("/purchase", middleware2.JWT(), handlers.PurchaseSong)
 
 		}
 	}

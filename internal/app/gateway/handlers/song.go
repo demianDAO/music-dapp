@@ -96,3 +96,22 @@ func DownloadSong(ctx *gin.Context) {
 	ctx.Header("Content-Length", string(len(songs)))
 	ctx.Data(http.StatusOK, "audio/mpeg", songs)
 }
+
+func PurchaseSong(ctx *gin.Context) {
+
+	tokenId, _ := strconv.ParseUint(ctx.PostForm("token_id"), 10, 64)
+	singerAddr := ctx.PostForm("singer_addr")
+	userAddr := ctx.GetString("user_addr")
+
+	err := services.PurchaseSong(ctx, userAddr, singerAddr, tokenId)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "purchase success",
+	})
+
+}

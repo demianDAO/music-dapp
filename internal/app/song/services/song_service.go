@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/goccy/go-json"
 	log "github.com/sirupsen/logrus"
 	"math/big"
@@ -28,6 +29,31 @@ func NewSongService() *SongService {
 		SongServiceInstance = &SongService{}
 	})
 	return SongServiceInstance
+}
+func (us *SongService) PurchaseSong(ctx context.Context, req *pb.PurchaseSongReq, res *pb.PurchaseSongRes) error {
+	logInstance := log.WithFields(log.Fields{
+		"pkg":  "services",
+		"func": "PurchaseSong",
+	})
+	logInstance.Infof("user = %v", req.GetUserAddr())
+	logInstance.Infof("song = %v", req.GetTokenId())
+	logInstance.Infof("singer = %v", req.GetSingerAddr())
+
+	var tx *types.Transaction
+	var err error
+
+	if req.GetUserAddr() == config.TestAddr1 {
+		tx, err = contract.SongNFTTrade.PurchaseSong(contract.TransactOpts1, big.NewInt(int64(req.GetTokenId())), common.HexToAddress(req.GetSingerAddr()))
+	} else if req.GetUserAddr() == config.TestAddr2 {
+		tx, err = contract.SongNFTTrade.PurchaseSong(contract.TransactOpts2, big.NewInt(int64(req.GetTokenId())), common.HexToAddress(req.GetSingerAddr()))
+	}
+
+	if err != nil {
+		logInstance.Errorf("err = %v", err)
+		return err
+	}
+	logInstance.Infof("tx = %v", tx)
+	return nil
 }
 
 func (us *SongService) FindSongs(ctx context.Context, req *pb.FindSongsByAddrReq, res *pb.FindSongsByAddrRes) error {
@@ -99,6 +125,8 @@ func (us *SongService) UploadSong(ctx context.Context, req *pb.CreateSongReq, re
 
 	tokenId, err := contract.SongNFT.CurrentID(&bind.CallOpts{Pending: true})
 
+	var tx *types.Transaction
+
 	if err != nil {
 		return err
 	}
@@ -122,18 +150,21 @@ func (us *SongService) UploadSong(ctx context.Context, req *pb.CreateSongReq, re
 	//mint song nft
 	go func() {
 		if req.GetArtistAddr() == config.TestAddr1 {
-			mintTx, err := contract.SongNFTTrade.CreateMusic(contract.TransactOpts1, big.NewInt(int64(req.GetAmount())), big.NewInt(int64(req.GetPrice())), req.GetTokenUri())
-			if err != nil {
-				log.WithFields(log.Fields{
-					"pkg":  "services",
-					"func": "UploadSong",
-				}).Errorf("Mint err = %v", err)
-			}
+			tx, err = contract.SongNFTTrade.CreateMusic(contract.TransactOpts1, big.NewInt(int64(req.GetAmount())), big.NewInt(int64(req.GetPrice())), req.GetTokenUri())
+		} else if req.GetArtistAddr() == config.TestAddr2 {
+			tx, err = contract.SongNFTTrade.CreateMusic(contract.TransactOpts2, big.NewInt(int64(req.GetAmount())), big.NewInt(int64(req.GetPrice())), req.GetTokenUri())
+		}
+
+		if err != nil {
 			log.WithFields(log.Fields{
 				"pkg":  "services",
 				"func": "UploadSong",
-			}).Infof("mintTx = %v", mintTx)
+			}).Errorf("Mint err = %v", err)
 		}
+		log.WithFields(log.Fields{
+			"pkg":  "services",
+			"func": "UploadSong",
+		}).Infof("tx = %v", tx)
 	}()
 
 	uploadReq, err := json.Marshal(&mq.UploadReq{

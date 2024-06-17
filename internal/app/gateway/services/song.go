@@ -42,3 +42,15 @@ func DownloadSong(ctx context.Context, txId string) ([]byte, error) {
 	}
 	return res.SongBytes, nil
 }
+
+func PurchaseSong(ctx context.Context, userAddr, singerAddr string, tokenId uint64) error {
+	_, err := SongService.PurchaseSong(ctx, &pb.PurchaseSongReq{
+		TokenId:    tokenId,
+		UserAddr:   userAddr,
+		SingerAddr: singerAddr,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
