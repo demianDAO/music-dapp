@@ -43,7 +43,7 @@ func (us *SongService) PurchaseSong(ctx context.Context, req *pb.PurchaseSongReq
 		UserAddr:   req.GetUserAddr(),
 	})
 
-	err = mq.Publish(mq.RabbitMQInstance, mq.Queues[mq.PurchaseSongQueue], purchaseSongNFTReq)
+	err = mq.Publish(mq.RabbitMQInstance, mq.QueuesRouteKey[mq.PurchaseSongQueue], purchaseSongNFTReq)
 
 	if err != nil {
 		logInstance.Errorf("PurchaseSongQueue err = %v", err)
@@ -151,7 +151,7 @@ func (us *SongService) UploadSong(ctx context.Context, req *pb.CreateSongReq, re
 			Data:       req.GetContent(),
 		})
 
-		err = mq.Publish(mq.RabbitMQInstance, mq.Queues[mq.SongUploadQueue], uploadSongReq)
+		err = mq.Publish(mq.RabbitMQInstance, mq.QueuesRouteKey[mq.SongUploadQueue], uploadSongReq)
 
 		if err != nil {
 			logIns.Errorf("SongUpload err = %v", err)
@@ -166,7 +166,7 @@ func (us *SongService) UploadSong(ctx context.Context, req *pb.CreateSongReq, re
 			Amount:     req.GetAmount(),
 		})
 
-		err = mq.Publish(mq.RabbitMQInstance, mq.Queues[mq.CreateSongQueue], createSongNFTReq)
+		err = mq.Publish(mq.RabbitMQInstance, mq.QueuesRouteKey[mq.CreateSongQueue], createSongNFTReq)
 
 		if err != nil {
 			logIns.Errorf("createSongNFT err = %v", err)

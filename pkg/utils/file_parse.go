@@ -10,6 +10,7 @@ import (
 func FileHeaderToBytes(fileHeader *multipart.FileHeader) ([]byte, error) {
 	// 打开文件
 	file, err := fileHeader.Open()
+
 	if err != nil {
 		return nil, err
 	}

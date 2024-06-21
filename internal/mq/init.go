@@ -20,7 +20,7 @@ const (
 	PurchaseSongQueue = "purchase_song_queue"
 )
 
-var Queues = map[string]string{
+var QueuesRouteKey = map[string]string{
 	SongUploadQueue:   "song.upload",
 	CreateSongQueue:   "song.create",
 	PurchaseSongQueue: "song.purchase",
@@ -59,7 +59,7 @@ func Init(amqpURL string) error {
 		return err
 	}
 
-	for queue, routingKey := range Queues {
+	for queue, routingKey := range QueuesRouteKey {
 		q, err := ch.QueueDeclare(
 			queue,
 			true,  // durable
