@@ -7,14 +7,11 @@ import (
 	"net/http"
 	"strconv"
 	"web3-music-platform/internal/app/gateway/services"
-	"web3-music-platform/internal/app/song/models"
 	"web3-music-platform/pkg/rdb"
 	"web3-music-platform/pkg/utils"
 )
 
 func UploadSong(ctx *gin.Context) {
-
-	var song models.Song
 
 	var logInstance = log.WithFields(log.Fields{
 		"module": "handlers",
@@ -22,27 +19,31 @@ func UploadSong(ctx *gin.Context) {
 	})
 
 	fileHeader, err := ctx.FormFile("file")
+
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return
 	}
 
-	song.Title = ctx.PostForm("title")
-	song.ArtistAddr = ctx.GetString("user_addr")
-	song.Overview = ctx.PostForm("overview")
-	tokenUri := ctx.PostForm("token_uri")
-	amount, _ := strconv.ParseUint(ctx.PostForm("amount"), 10, 64)
-	price, _ := strconv.ParseUint(ctx.PostForm("price"), 10, 64)
+	title := ctx.PostForm("title")
+	artistAddr := ctx.GetString("user_addr")
+	overview := ctx.PostForm("overview")
 
-	//go func() {
-	fileBytes, err := utils.FileHeaderToBytes(fileHeader)
-	logInstance.Infof("song:%v token_uri:%v amount:%v price:%v", song, tokenUri, amount, price)
-	err = services.UploadSong(ctx, song, fileBytes, tokenUri, amount, price)
-	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
-		return
-	}
-	//}()
+	//tokenUri := ctx.PostForm("token_uri")
+	tokenID, _ := strconv.ParseUint(ctx.PostForm("token_id"), 10, 64)
+	//amount, _ := strconv.ParseUint(ctx.PostForm("amount"), 10, 64)
+	//price, _ := strconv.ParseUint(ctx.PostForm("price"), 10, 64)
+
+	logInstance.Infof("title:%v, artistAddr:%v, overview:%v tokenID:%v", title, artistAddr, overview, tokenID)
+
+	go func() {
+		fileBytes, err := utils.FileHeaderToBytes(fileHeader)
+		err = services.UploadSong(ctx, title, artistAddr, overview, fileBytes, tokenID)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+			return
+		}
+	}()
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "upload success",
@@ -97,21 +98,22 @@ func DownloadSong(ctx *gin.Context) {
 	ctx.Data(http.StatusOK, "audio/mpeg", songs)
 }
 
-func PurchaseSong(ctx *gin.Context) {
-
-	tokenId, _ := strconv.ParseUint(ctx.PostForm("token_id"), 10, 64)
-	singerAddr := ctx.PostForm("singer_addr")
-	userAddr := ctx.GetString("user_addr")
-
-	err := services.PurchaseSong(ctx, userAddr, singerAddr, tokenId)
-
-	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "purchase success",
-	})
-
-}
+// turn to the front end
+//func PurchaseSong(ctx *gin.Context) {
+//
+//	tokenId, _ := strconv.ParseUint(ctx.PostForm("token_id"), 10, 64)
+//	singerAddr := ctx.PostForm("singer_addr")
+//	userAddr := ctx.GetString("user_addr")
+//
+//	err := services.PurchaseSong(ctx, userAddr, singerAddr, tokenId)
+//
+//	if err != nil {
+//		ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+//		return
+//	}
+//
+//	ctx.JSON(http.StatusOK, gin.H{
+//		"message": "purchase success",
+//	})
+//
+//}

@@ -3,12 +3,12 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"web3-music-platform/internal/app/gateway/handlers"
-	middleware2 "web3-music-platform/pkg/middleware"
+	"web3-music-platform/pkg/middleware"
 )
 
 func NewRouter() *gin.Engine {
 	ginRouter := gin.Default()
-	ginRouter.Use(middleware2.Cors())
+	ginRouter.Use(middleware.Cors())
 	//store := cookie.NewStore([]byte("something-very-secret"))
 	//ginRouter.Use(sessions.Sessions("mysession", store))
 	v1 := ginRouter.Group("v1")
@@ -25,15 +25,15 @@ func NewRouter() *gin.Engine {
 		postGroup := v1.Group("/post")
 		//postGroup.Use(middleware.JWT())
 		{
-			postGroup.POST("", middleware2.JWT(), handlers.CreatePost)
+			postGroup.POST("", middleware.JWT(), handlers.CreatePost)
 			postGroup.GET("", handlers.GetPosts)
 		}
 		songGroup := v1.Group("/song")
 		{
-			songGroup.POST("", middleware2.JWT(), handlers.UploadSong)
+			songGroup.POST("", middleware.JWT(), handlers.UploadSong)
 			songGroup.GET("", handlers.FindSongs)
 			songGroup.GET("/:tx_id", handlers.DownloadSong)
-			songGroup.POST("/purchase", middleware2.JWT(), handlers.PurchaseSong)
+			//songGroup.POST("/purchase", middleware.JWT(), handlers.PurchaseSong)
 
 		}
 	}

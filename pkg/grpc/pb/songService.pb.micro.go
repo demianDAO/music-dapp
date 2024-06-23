@@ -39,7 +39,6 @@ type SongService interface {
 	UploadSong(ctx context.Context, in *CreateSongReq, opts ...client.CallOption) (*CreateSongRes, error)
 	FindSongs(ctx context.Context, in *FindSongsByAddrReq, opts ...client.CallOption) (*FindSongsByAddrRes, error)
 	DownloadSong(ctx context.Context, in *DownloadSongReq, opts ...client.CallOption) (*DownloadSongRes, error)
-	PurchaseSong(ctx context.Context, in *PurchaseSongReq, opts ...client.CallOption) (*PurchaseSongRes, error)
 }
 
 type songService struct {
@@ -84,23 +83,12 @@ func (c *songService) DownloadSong(ctx context.Context, in *DownloadSongReq, opt
 	return out, nil
 }
 
-func (c *songService) PurchaseSong(ctx context.Context, in *PurchaseSongReq, opts ...client.CallOption) (*PurchaseSongRes, error) {
-	req := c.c.NewRequest(c.name, "SongService.PurchaseSong", in)
-	out := new(PurchaseSongRes)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // Server API for SongService service
 
 type SongServiceHandler interface {
 	UploadSong(context.Context, *CreateSongReq, *CreateSongRes) error
 	FindSongs(context.Context, *FindSongsByAddrReq, *FindSongsByAddrRes) error
 	DownloadSong(context.Context, *DownloadSongReq, *DownloadSongRes) error
-	PurchaseSong(context.Context, *PurchaseSongReq, *PurchaseSongRes) error
 }
 
 func RegisterSongServiceHandler(s server.Server, hdlr SongServiceHandler, opts ...server.HandlerOption) error {
@@ -108,7 +96,6 @@ func RegisterSongServiceHandler(s server.Server, hdlr SongServiceHandler, opts .
 		UploadSong(ctx context.Context, in *CreateSongReq, out *CreateSongRes) error
 		FindSongs(ctx context.Context, in *FindSongsByAddrReq, out *FindSongsByAddrRes) error
 		DownloadSong(ctx context.Context, in *DownloadSongReq, out *DownloadSongRes) error
-		PurchaseSong(ctx context.Context, in *PurchaseSongReq, out *PurchaseSongRes) error
 	}
 	type SongService struct {
 		songService
@@ -131,8 +118,4 @@ func (h *songServiceHandler) FindSongs(ctx context.Context, in *FindSongsByAddrR
 
 func (h *songServiceHandler) DownloadSong(ctx context.Context, in *DownloadSongReq, out *DownloadSongRes) error {
 	return h.SongServiceHandler.DownloadSong(ctx, in, out)
-}
-
-func (h *songServiceHandler) PurchaseSong(ctx context.Context, in *PurchaseSongReq, out *PurchaseSongRes) error {
-	return h.SongServiceHandler.PurchaseSong(ctx, in, out)
 }

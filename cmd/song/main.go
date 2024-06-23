@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"github.com/go-micro/plugins/v4/registry/etcd"
 	"go-micro.dev/v4"
 	"go-micro.dev/v4/registry"
 	"web3-music-platform/internal/app/song/db"
+	"web3-music-platform/internal/app/song/repositories"
 	"web3-music-platform/internal/app/song/services"
 	"web3-music-platform/internal/irys"
 	"web3-music-platform/internal/mq"
@@ -49,7 +51,8 @@ func main() {
 	// 结构命令行参数，初始化
 	microService.Init()
 	// 服务注册
-	_ = pb.RegisterSongServiceHandler(microService.Server(), services.NewSongService())
+	_ = pb.RegisterSongServiceHandler(microService.Server(),
+		services.NewSongService(contract.SongNFTTrade, repositories.NewSongRepository(context.Background()), contract.SongNFTTradeFilter, rdb.RedisInstance))
 	// 启动微服务
 	_ = microService.Run()
 }

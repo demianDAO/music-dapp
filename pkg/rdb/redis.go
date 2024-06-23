@@ -6,6 +6,8 @@ import (
 	"errors"
 	"github.com/redis/go-redis/v9"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 	user_service_model "web3-music-platform/internal/app/user/models"
 	"web3-music-platform/pkg/grpc/pb"
@@ -39,9 +41,34 @@ func Init() {
 	}
 	RedisInstance = &RedisClient{}
 	RedisInstance.Client = client
-	//return &RedisClient{
-	//	Client: client,
-	//}
+}
+
+func (client *RedisClient) CacheReleasedSongEvent(ctx context.Context, address string, tokenId uint64) error {
+	address = strings.ToLower(address)
+	key := "event:" + address + ":released song"
+	if err := client.LPush(ctx, key, tokenId).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (client *RedisClient) GetOldestTokenId(ctx context.Context, address string) (uint64, error) {
+	address = strings.ToLower(address)
+	key := "event:" + address + ":released song"
+	tokenIdStr, err := client.LPop(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return 0, errors.New("no tokenId found")
+		}
+		return 0, err
+	}
+
+	tokenId, err := strconv.ParseUint(tokenIdStr, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return tokenId, nil
 }
 
 func (client *RedisClient) GetUserInfo(ctx context.Context, address string) (*user_service_model.User, error) {

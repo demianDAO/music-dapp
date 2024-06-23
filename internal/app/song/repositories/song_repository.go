@@ -58,3 +58,24 @@ func (sr *SongRepository) GetSongsByTokenIDs(tokenIDs []uint64) ([]*models.Song,
 	}
 	return songs, nil
 }
+
+func (sr SongRepository) SetTokenId(artistAddr string, tokenId uint64) error {
+	var latestSong *models.Song
+	err := sr.Model(&models.Song{}).Where("artist_addr = ?", artistAddr).Order("created_at desc").First(&latestSong).Error
+	if err != nil {
+		return err
+	}
+	return sr.Model(latestSong).Update("token_id", tokenId).Error
+}
+
+func (sr SongRepository) GetLatestSong(artistAddr string) (*models.Song, error) {
+	var latestSong models.Song
+	err := sr.Model(&models.Song{}).
+		Where("artist_addr = ?", artistAddr).
+		Order("created_at desc").
+		First(&latestSong).Error
+	if err != nil {
+		return nil, err
+	}
+	return &latestSong, nil
+}

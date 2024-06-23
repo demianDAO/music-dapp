@@ -9,9 +9,10 @@ message CreateSongReq{
   string artist_addr = 2;
   string overview = 3;
   bytes content = 4;
-  string token_uri = 5;
-  uint64 amount = 6;
-  uint64 price = 7;
+//  string token_uri = 5;
+//  uint64 amount = 6;
+//  uint64 price = 7;
+  uint64 token_id = 5;
 }
 
 message CreateSongRes{
@@ -32,6 +33,7 @@ message FindSongsByAddrRes{
     string token_uri = 6;
     uint64 amount = 7;
     uint64 price = 8;
+    string tx_id = 9;
   }
   repeated SongInfo songInfos = 1;
 }
@@ -44,20 +46,20 @@ message DownloadSongRes{
   bytes songBytes = 1;
 }
 
-message PurchaseSongReq{
-  uint64 token_id = 1;
-  string user_addr = 2;
-  string singer_addr = 3;
-}
-
-message PurchaseSongRes{
-
-}
+//message PurchaseSongReq{
+//  uint64 token_id = 1;
+//  string user_addr = 2;
+//  string singer_addr = 3;
+//}
+//
+//message PurchaseSongRes{
+//
+//}
 
 
 service SongService{
   rpc UploadSong(CreateSongReq) returns(CreateSongRes);
   rpc FindSongs(FindSongsByAddrReq) returns(FindSongsByAddrRes);
   rpc DownloadSong(DownloadSongReq) returns(DownloadSongRes);
-  rpc PurchaseSong(PurchaseSongReq) returns(PurchaseSongRes);
+//  rpc PurchaseSong(PurchaseSongReq) returns(PurchaseSongRes);
 }

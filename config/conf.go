@@ -31,7 +31,8 @@ var (
 
 	RabbitMqUrl string
 
-	BSC_RPC string
+	BSC_RPC_WS string
+	BSC_RPC    string
 
 	MPTokenAddr      string
 	SongNFTAddr      string
@@ -109,6 +110,8 @@ func LoadRabbitMq(file *ini.File) {
 }
 
 func LoadSmartContract(file *ini.File) {
+	BSC_RPC_WS = file.Section("smart_contract").Key("BSC_RPC_WS").String()
+
 	BSC_RPC = file.Section("smart_contract").Key("BSC_RPC").String()
 
 	MPTokenAddr = file.Section("smart_contract").Key("MPTokenAddr").String()

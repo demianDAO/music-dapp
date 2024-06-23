@@ -83,8 +83,8 @@ func Init(amqpURL string) error {
 	RabbitMQInstance = &RabbitMQ{conn: conn, channel: ch}
 
 	go Consume(RabbitMQInstance, SongUploadQueue, handlers.SongUpload)
-	go Consume(RabbitMQInstance, CreateSongQueue, handlers.CreateMusicNFT)
-	go Consume(RabbitMQInstance, PurchaseSongQueue, handlers.PurchaseSong)
+	//go Consume(RabbitMQInstance, CreateSongQueue, handlers.CreateMusicNFT)
+	//go Consume(RabbitMQInstance, PurchaseSongQueue, handlers.PurchaseSong)
 
 	return nil
 }

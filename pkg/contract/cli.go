@@ -13,11 +13,16 @@ import (
 var MPToken *sm.MPToken
 var SongNFT *sm.SongNFT
 var SongNFTTrade *sm.SongNFTTrade
+var SongNFTTradeFilter *sm.SongNFTTradeFilterer
 
 var TransactOpts1 *bind.TransactOpts
 var TransactOpts2 *bind.TransactOpts
 
 func NewGethClient() error {
+	connWss, err := ethclient.Dial(config.BSC_RPC_WS)
+	if err != nil {
+		return err
+	}
 	conn, err := ethclient.Dial(config.BSC_RPC)
 	if err != nil {
 		return err
@@ -31,6 +36,10 @@ func NewGethClient() error {
 		return err
 	}
 	SongNFTTrade, err = sm.NewSongNFTTrade(common.HexToAddress(config.SongNFTTradeAddr), conn)
+	if err != nil {
+		return err
+	}
+	SongNFTTradeFilter, err = sm.NewSongNFTTradeFilterer(common.HexToAddress(config.SongNFTTradeAddr), connWss)
 	if err != nil {
 		return err
 	}

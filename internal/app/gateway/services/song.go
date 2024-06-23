@@ -2,19 +2,16 @@ package services
 
 import (
 	"context"
-	"web3-music-platform/internal/app/song/models"
 	"web3-music-platform/pkg/grpc/pb"
 )
 
-func UploadSong(ctx context.Context, song models.Song, content []byte, tokenUri string, amount, price uint64) error {
+func UploadSong(ctx context.Context, title, artistAddr, overview string, content []byte, tokenId uint64) error {
 	_, err := SongService.UploadSong(ctx, &pb.CreateSongReq{
-		Title:      song.Title,
-		ArtistAddr: song.ArtistAddr,
-		Overview:   song.Overview,
+		Title:      title,
+		ArtistAddr: artistAddr,
+		Overview:   overview,
 		Content:    content,
-		TokenUri:   tokenUri,
-		Amount:     amount,
-		Price:      price,
+		TokenId:    tokenId,
 	})
 	if err != nil {
 		return err
@@ -43,14 +40,14 @@ func DownloadSong(ctx context.Context, txId string) ([]byte, error) {
 	return res.SongBytes, nil
 }
 
-func PurchaseSong(ctx context.Context, userAddr, singerAddr string, tokenId uint64) error {
-	_, err := SongService.PurchaseSong(ctx, &pb.PurchaseSongReq{
-		TokenId:    tokenId,
-		UserAddr:   userAddr,
-		SingerAddr: singerAddr,
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
+//func PurchaseSong(ctx context.Context, userAddr, singerAddr string, tokenId uint64) error {
+//	_, err := SongService.PurchaseSong(ctx, &pb.PurchaseSongReq{
+//		TokenId:    tokenId,
+//		UserAddr:   userAddr,
+//		SingerAddr: singerAddr,
+//	})
+//	if err != nil {
+//		return err
+//	}
+//	return nil
+//}

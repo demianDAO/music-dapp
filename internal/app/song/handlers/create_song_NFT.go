@@ -29,9 +29,9 @@ func CreateMusicNFT(message []byte) error {
 	// Mint song NFT based on artist address
 	switch req.ArtistAddr {
 	case config.TestAddr1:
-		tx, err = contract.SongNFTTrade.CreateMusic(contract.TransactOpts1, big.NewInt(int64(req.Amount)), big.NewInt(int64(req.Price)), req.TokenURI)
+		tx, err = contract.SongNFTTrade.ReleasedSong(contract.TransactOpts1, big.NewInt(int64(req.Amount)), big.NewInt(int64(req.Price)), req.TokenURI)
 	case config.TestAddr2:
-		tx, err = contract.SongNFTTrade.CreateMusic(contract.TransactOpts2, big.NewInt(int64(req.Amount)), big.NewInt(int64(req.Price)), req.TokenURI)
+		tx, err = contract.SongNFTTrade.ReleasedSong(contract.TransactOpts2, big.NewInt(int64(req.Amount)), big.NewInt(int64(req.Price)), req.TokenURI)
 	default:
 		err = fmt.Errorf("unsupported artist address: %s", req.ArtistAddr)
 	}
