@@ -5,6 +5,16 @@ import (
 	"web3-music-platform/pkg/grpc/pb"
 )
 
+func DiscoverySongs(ctx context.Context, limit uint64) ([]*pb.DiscoveryRes_SongShortInfo, error) {
+	res, err := SongService.Discovery(ctx, &pb.DiscoveryReq{
+		Limit: limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res.GetSongShortInfos(), nil
+}
+
 func UploadSong(ctx context.Context, title, artistAddr, overview string, content []byte, tokenId uint64) error {
 	_, err := SongService.UploadSong(ctx, &pb.CreateSongReq{
 		Title:      title,

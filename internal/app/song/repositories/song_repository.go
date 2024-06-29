@@ -79,3 +79,20 @@ func (sr SongRepository) GetLatestSong(artistAddr string) (*models.Song, error) 
 	}
 	return &latestSong, nil
 }
+
+func (sr *SongRepository) GetLatestSongs(limit int) ([]*models.Song, error) {
+	log.WithFields(log.Fields{
+		"pkg":  "repositories",
+		"func": "GetLatestSongs",
+	}).Infof("limit = %d", limit)
+
+	var songs []*models.Song
+	err := sr.Model(&models.Song{}).
+		Order("created_at desc").
+		Limit(limit).
+		Find(&songs).Error
+	if err != nil {
+		return nil, err
+	}
+	return songs, nil
+}

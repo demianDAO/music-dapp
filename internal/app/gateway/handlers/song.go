@@ -11,6 +11,23 @@ import (
 	"web3-music-platform/pkg/utils"
 )
 
+func DiscoverySongs(ctx *gin.Context) {
+	var logInstance = log.WithFields(log.Fields{
+		"module": "handlers",
+		"func":   "DiscoverySongs",
+	})
+
+	limitStr := ctx.Param("limit")
+	limit, _ := strconv.ParseUint(limitStr, 10, 64)
+	songs, err := services.DiscoverySongs(ctx, limit)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	logInstance.Infof("songs:%v", songs)
+	ctx.JSON(http.StatusOK, songs)
+}
+
 func UploadSong(ctx *gin.Context) {
 
 	var logInstance = log.WithFields(log.Fields{

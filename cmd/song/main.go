@@ -52,7 +52,7 @@ func main() {
 	microService.Init()
 	// 服务注册
 	_ = pb.RegisterSongServiceHandler(microService.Server(),
-		services.NewSongService(contract.SongNFTTrade, repositories.NewSongRepository(context.Background()), contract.SongNFTTradeFilter, rdb.RedisInstance))
+		services.NewSongService(contract.SongNFT, contract.SongNFTTrade, repositories.NewSongRepository(context.Background()), contract.SongNFTTradeFilter, rdb.RedisInstance))
 	// 启动微服务
 	_ = microService.Run()
 }

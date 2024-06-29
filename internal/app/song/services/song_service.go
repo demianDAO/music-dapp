@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	log "github.com/sirupsen/logrus"
+	"math/big"
 	"sync"
 	"web3-music-platform/internal/app/song/listener"
 	"web3-music-platform/internal/app/song/models"
@@ -24,16 +25,18 @@ var SongSrvOnce sync.Once
 type SongService struct {
 	songRepo     *repositories.SongRepository
 	songNFTTrade *sm.SongNFTTrade
+	songNFT      *sm.SongNFT
 	redisIns     *rdb.RedisClient
 }
 
-func NewSongService(songNFTTrade *sm.SongNFTTrade, songRepo *repositories.SongRepository, songNFTTradeFilterer *sm.SongNFTTradeFilterer, redisInstance *rdb.RedisClient) *SongService {
+func NewSongService(songNFT *sm.SongNFT, songNFTTrade *sm.SongNFTTrade, songRepo *repositories.SongRepository, songNFTTradeFilterer *sm.SongNFTTradeFilterer, redisInstance *rdb.RedisClient) *SongService {
 	listener := listener.NewListener(songRepo, songNFTTradeFilterer)
 	SongSrvOnce.Do(func() {
 		SongServiceInstance = &SongService{
 			songRepo:     songRepo,
 			songNFTTrade: songNFTTrade,
 			redisIns:     redisInstance,
+			songNFT:      songNFT,
 		}
 	})
 	go listener.WatchReleasedSong() // 在服务构造时启动监听器
@@ -65,6 +68,43 @@ func NewSongService(songNFTTrade *sm.SongNFTTrade, songRepo *repositories.SongRe
 //
 //	return nil
 //}
+
+func (us *SongService) Discovery(ctx context.Context, req *pb.DiscoveryReq, res *pb.DiscoveryRes) error {
+	log.WithFields(log.Fields{
+		"pkg":  "services",
+		"func": "Discovery",
+	}).Infof("req = %v", req)
+
+	// 获取最新发布的歌曲信息
+	latestSongs, err := us.songRepo.GetLatestSongs(int(req.GetLimit()))
+	if err != nil {
+		return err
+	}
+
+	// 初始化返回的SongInfo数组
+	songInfos := make([]*pb.DiscoveryRes_SongShortInfo, len(latestSongs))
+
+	// 遍历每个最新的歌曲信息
+	for id, song := range latestSongs {
+		// 根据tokenID调用NFT的uri函数，获取uri
+		tokenURI, err := us.songNFT.Uri(&bind.CallOpts{Pending: true}, big.NewInt(int64(song.TokenID)))
+		if err != nil {
+			return err
+		}
+
+		songInfos[id] = &pb.DiscoveryRes_SongShortInfo{
+			Id:         uint64(id),
+			TokenId:    song.TokenID,
+			TokenUri:   tokenURI,
+			Title:      song.Title,
+			ArtistAddr: song.ArtistAddr,
+			Overview:   song.Overview,
+		}
+	}
+
+	res.SongShortInfos = songInfos
+	return nil
+}
 
 func (us *SongService) FindSongs(ctx context.Context, req *pb.FindSongsByAddrReq, res *pb.FindSongsByAddrRes) error {
 	log.WithFields(log.Fields{
