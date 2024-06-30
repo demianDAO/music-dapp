@@ -54,7 +54,7 @@ func (sr *SongRepository) GetSongsByTokenIDs(tokenIDs []uint64) ([]*models.Song,
 
 	var songs []*models.Song
 	err := sr.Model(&models.Song{}).Where("token_id IN (?)", tokenIDs).Find(&songs).Error
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 	return songs, nil

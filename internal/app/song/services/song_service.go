@@ -136,18 +136,20 @@ func (us *SongService) FindSongs(ctx context.Context, req *pb.FindSongsByAddrReq
 		"func": "FindSongs",
 	}).Infof("infosByContract = %v", infosByContract)
 
-	songInfos := make([]*pb.FindSongsByAddrRes_SongInfo, len(infosByContract))
+	//songInfos := make([]*pb.FindSongsByAddrRes_SongInfo, len(infosByContract))
+	songInfos := make(map[uint64]*pb.FindSongsByAddrRes_SongInfo)
 	tokenIDs := make([]uint64, len(infosByContract))
 
 	for id, info := range infosByContract {
-		songInfos[id] = &pb.FindSongsByAddrRes_SongInfo{
+		tokenId := info.TokenId.Uint64()
+		songInfos[tokenId] = &pb.FindSongsByAddrRes_SongInfo{
 			Id:       uint64(id),
-			TokenId:  info.TokenId.Uint64(),
+			TokenId:  tokenId,
 			TokenUri: info.TokenURI,
 			Amount:   info.Balance.Uint64(),
 			Price:    info.Price.Uint64(),
 		}
-		tokenIDs[id] = info.TokenId.Uint64()
+		tokenIDs[id] = tokenId
 	}
 
 	infosByDB, err := us.songRepo.GetSongsByTokenIDs(tokenIDs)
@@ -155,17 +157,23 @@ func (us *SongService) FindSongs(ctx context.Context, req *pb.FindSongsByAddrReq
 		return err
 	}
 
-	for id, info := range infosByDB {
+	for _, info := range infosByDB {
+		tokenId := info.TokenID
 		log.WithFields(log.Fields{
 			"pkg":  "services",
 			"func": "FindSongs",
-		}).Infof("infosByDB = %v", info)
-		songInfos[id].Title = info.Title
-		songInfos[id].ArtistAddr = info.ArtistAddr
-		songInfos[id].Overview = info.Overview
-		songInfos[id].TxId = info.TxId
+		}).Infof("infosByDB = %v tokenID = %v", info, tokenId)
+		songInfos[tokenId].Title = info.Title
+		songInfos[tokenId].ArtistAddr = info.ArtistAddr
+		songInfos[tokenId].Overview = info.Overview
+		songInfos[tokenId].TxId = info.TxId
 	}
-	res.SongInfos = songInfos
+
+	res.SongInfos = make([]*pb.FindSongsByAddrRes_SongInfo, 0, len(songInfos))
+	for _, songInfo := range songInfos {
+		res.SongInfos = append(res.SongInfos, songInfo)
+	}
+
 	return nil
 }
 
