@@ -15,13 +15,12 @@ func DiscoverySongs(ctx context.Context, limit uint64) ([]*pb.DiscoveryRes_SongS
 	return res.GetSongShortInfos(), nil
 }
 
-func UploadSong(ctx context.Context, title, artistAddr, overview string, content []byte, tokenId uint64) error {
+func UploadSong(ctx context.Context, title, artistAddr, overview string, content []byte) error {
 	_, err := SongService.UploadSong(ctx, &pb.CreateSongReq{
 		Title:      title,
 		ArtistAddr: artistAddr,
 		Overview:   overview,
 		Content:    content,
-		TokenId:    tokenId,
 	})
 	if err != nil {
 		return err

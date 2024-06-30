@@ -47,15 +47,15 @@ func UploadSong(ctx *gin.Context) {
 	overview := ctx.PostForm("overview")
 
 	//tokenUri := ctx.PostForm("token_uri")
-	tokenID, _ := strconv.ParseUint(ctx.PostForm("token_id"), 10, 64)
+	//tokenID, _ := strconv.ParseUint(ctx.PostForm("token_id"), 10, 64)
 	//amount, _ := strconv.ParseUint(ctx.PostForm("amount"), 10, 64)
 	//price, _ := strconv.ParseUint(ctx.PostForm("price"), 10, 64)
 
-	logInstance.Infof("title:%v, artistAddr:%v, overview:%v tokenID:%v", title, artistAddr, overview, tokenID)
+	logInstance.Infof("title:%v, artistAddr:%v, overview:%v", title, artistAddr, overview)
 
 	go func() {
 		fileBytes, err := utils.FileHeaderToBytes(fileHeader)
-		err = services.UploadSong(ctx, title, artistAddr, overview, fileBytes, tokenID)
+		err = services.UploadSong(ctx, title, artistAddr, overview, fileBytes)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 			return
