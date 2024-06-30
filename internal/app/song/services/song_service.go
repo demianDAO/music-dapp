@@ -195,7 +195,7 @@ func (us *SongService) UploadSong(ctx context.Context, req *pb.CreateSongReq, re
 	go func() {
 		uploadSongReq, err := json.Marshal(&messages.UploadSongReq{
 			ArtistAddr: req.GetArtistAddr(),
-			TokenID:    req.GetTokenId(),
+			TokenID:    tokenId,
 			Data:       req.GetContent(),
 		})
 

@@ -60,18 +60,17 @@ func handleReleasedSongEvent(artistAddr string, tokenId uint64, repo *repositori
 	logIns.Printf("  TokenId: %d\n", tokenId)
 
 	song, err := repo.GetLatestSong(artistAddr)
-	if err != nil {
+	if err != nil || song.TokenID != 0 {
+		err := rdb.RedisInstance.CacheReleasedSongEvent(context.Background(), artistAddr, tokenId)
+		if err != nil {
+			return err
+		}
 		return err
 	}
 
 	if song.TokenID == 0 {
 		logIns.Print("Fill tokenId in handleReleasedSongEvent")
 		err = repo.SetTokenId(artistAddr, tokenId)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := rdb.RedisInstance.CacheReleasedSongEvent(context.Background(), artistAddr, tokenId)
 		if err != nil {
 			return err
 		}

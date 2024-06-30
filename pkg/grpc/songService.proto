@@ -9,7 +9,6 @@ message CreateSongReq{
   string artist_addr = 2;
   string overview = 3;
   bytes content = 4;
-  uint64 token_id = 5;
 }
 
 message CreateSongRes{

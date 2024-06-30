@@ -4,6 +4,7 @@ import (
 	"context"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"strings"
 	"web3-music-platform/internal/app/song/db"
 	"web3-music-platform/internal/app/song/models"
 )
@@ -71,7 +72,7 @@ func (sr SongRepository) SetTokenId(artistAddr string, tokenId uint64) error {
 func (sr SongRepository) GetLatestSong(artistAddr string) (*models.Song, error) {
 	var latestSong models.Song
 	err := sr.Model(&models.Song{}).
-		Where("artist_addr = ?", artistAddr).
+		Where("artist_addr = ?", strings.ToLower(artistAddr)).
 		Order("created_at desc").
 		First(&latestSong).Error
 	if err != nil {
