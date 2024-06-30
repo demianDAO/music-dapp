@@ -89,6 +89,19 @@ func (us *SongService) Discovery(ctx context.Context, req *pb.DiscoveryReq, res 
 		// 根据tokenID调用NFT的uri函数，获取uri
 		tokenURI, err := us.songNFT.Uri(&bind.CallOpts{Pending: true}, big.NewInt(int64(song.TokenID)))
 		if err != nil {
+			log.WithFields(log.Fields{
+				"pkg":  "services",
+				"func": "Discovery",
+			}).Debugf("get uri err = %v", err)
+			return err
+		}
+		//get price
+		price, err := us.songNFTTrade.SongPricesByAddr(&bind.CallOpts{Pending: true}, common.HexToAddress(song.ArtistAddr), big.NewInt(int64(song.TokenID)))
+		if err != nil {
+			log.WithFields(log.Fields{
+				"pkg":  "services",
+				"func": "Discovery",
+			}).Debugf("get price err = %v", err)
 			return err
 		}
 
@@ -99,6 +112,8 @@ func (us *SongService) Discovery(ctx context.Context, req *pb.DiscoveryReq, res 
 			Title:      song.Title,
 			ArtistAddr: song.ArtistAddr,
 			Overview:   song.Overview,
+			Price:      price.Uint64(),
+			TxId:       song.TxId,
 		}
 	}
 

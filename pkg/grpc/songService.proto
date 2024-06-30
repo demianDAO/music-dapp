@@ -46,6 +46,8 @@ message DiscoveryRes{
     string overview = 4;
     uint64 token_id = 5;
     string token_uri = 6;
+    uint64 price = 7;
+    string tx_id = 8;
   }
   repeated SongShortInfo songShortInfos = 1;
 }
