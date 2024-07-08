@@ -91,7 +91,7 @@ func (client *RedisClient) SetUserInfo(ctx context.Context, address string, user
 	if err != nil {
 		return err
 	}
-	if err := client.Set(ctx, key, bytes, 15*time.Minute).Err(); err != nil {
+	if err := client.Set(ctx, key, bytes, 2*time.Minute).Err(); err != nil {
 		return err
 	}
 	return nil
@@ -120,7 +120,7 @@ func (client RedisClient) SetSongs(ctx context.Context, address string, songs []
 		}
 		pipe.LPush(ctx, key, jsonData)
 	}
-	pipe.Expire(ctx, key, 15*time.Minute)
+	pipe.Expire(ctx, key, 2*time.Minute)
 	_, err := pipe.Exec(ctx)
 	if err != nil {
 		return err
